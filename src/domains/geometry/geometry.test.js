@@ -4,7 +4,8 @@ import { addProblemResult, createStudentProfile } from '../../lib/studentProfile
 import { decodeAssignmentPayload, encodeAssignmentPayload } from '../../lib/assignments.js'
 import { normalizeImageQuestion } from '../arithmetic/screeningImageQuestions.js'
 import geometryDomain from './index.js'
-import { encodeGeometrySelection, geometryQuestions } from './questions.js'
+import { encodeGeometrySelection, geometryQuestionById, geometryQuestions } from './questions.js'
+import { findScreeningFigure } from '../arithmetic/screeningFigures.js'
 import { countGeometryAssignmentAnswers, getGeometryLevel, isGeometryFinalLevelPassed } from './progress.js'
 import { summarizeGeometry, summarizeGeometryProgress } from './statistics.js'
 
@@ -29,6 +30,36 @@ describe('geometry practice', () => {
         expect(geometryDomain.generate(skill, level, { recentGeometry }).values.geometryTaskId).toBe(expected[0])
       }
     }
+  })
+
+  it('keeps a controlled planar comparison in both levels and accepts the square as a rectangle', () => {
+    const skill = 'geometry_plane'
+    const stages = [
+      ['square-contrast-angles', 'square-standard'],
+      ['square-contrast-rotation', 'square-turned-same-size'],
+      ['square-contrast-scale', 'square-small']
+    ]
+    for (const level of [1, 2]) {
+      const history = [{ skill, values: { geometryTaskId: 'hexagon-image' } }]
+      for (const [id, square] of stages) {
+        const problem = geometryDomain.generate(skill, level, { recentGeometry: history })
+        expect(problem.values.geometryTaskId).toBe(id)
+        expect(problem.choiceTask.options.map(option => option.id).sort()).toEqual(['rhombus-equal-sides', square].sort())
+        expect(problem.choiceTask.correctOptionIds).toEqual([square])
+        expect(geometryDomain.verifyContent(problem).valid).toBe(true)
+        history.push(problem)
+      }
+      const final = geometryDomain.generate(skill, level, { recentGeometry: history })
+      expect(final.values).toMatchObject({ geometryTaskId: 'rectangle-contrast-square', geometryConcept: 'rectangle' })
+      expect(final.choiceTask.options.filter(option => findScreeningFigure(option.image.id).tags.includes('rektangel'))
+        .map(option => option.id).sort()).toEqual(['rectangle-standard', 'square-standard'])
+      expect(geometryDomain.evaluate(final, 'rectangle-standard').correct).toBe(false)
+      expect(geometryDomain.evaluate(final, encodeGeometrySelection(['rectangle-standard', 'square-standard'])).correct).toBe(true)
+      expect(geometryDomain.verifyContent(final).valid).toBe(true)
+    }
+    expect(geometryQuestionById['rectangle-image']).toMatchObject({
+      taskVersion: 1, correctOptionIds: ['rectangle-rotated', 'square-standard']
+    })
   })
 
   it('retains exact selection evidence without mastery or speed credit', () => {

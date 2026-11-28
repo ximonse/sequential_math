@@ -25,6 +25,16 @@ Börja med **Plana figurer**. Jämför en kvadrat med en romb utan räta vinklar
 
 Prova beskrivande steg som **Känn igen** och **Jämför och namnge**. En senare klarsignal kan baseras på korrekta svar på genuint olika exempel vid flera tillfällen, efter att banken och elevsvaren har granskats. Svarstid kan följas som flyt där det är ett uttalat mål. Dagens 12- och 18-sekundersgränser ändras först efter ett beslut om den nya progressionen.
 
+### Pilot verifierad lokalt 2026-11-28
+
+- [x] En kort följd i **Plana figurer** jämför kvadrat och romb med lika långa sidor, ändrar kvadratens läge respektive storlek och låter eleven välja både kvadraten och den avlånga rektangeln. Efter svaret förklaras den avgörande egenskapen.
+- [x] Frågorna har egna ID:n och testats i båda nivåerna. Historik och facit för tidigare frågor är intakta. Känn igen och Jämför och namnge visas tillsammans med nivåerna.
+- [x] Ett pekprov följde frågorna i elevvyn och verifierade att uteblivet kvadratval rättas som fel samt att svaren sparas under Plana figurer. Båda geometrirobotarna och alla 1 455 tester passerade.
+
+En hel bildomgång i Plana figurer innehåller nu 15 frågor. Nya uppdrag som omfattar delområdet följer den befintliga regeln för längd utifrån frågebanken. Tidigare skapade uppdrag har sitt antal sparat i uppdraget.
+
+Nästa steg är att följa upp pilotfrågorna med elevsvar och ta fram fler jämförbara exempel i Linjer och sträckor samt Kroppar (3D) inför blandad repetition.
+
 ## Etapp 3. Blandad geometri
 
 Lägg till ett eget repetitionsval när varje delområde har flera bra exempel. Varva frågor från de tre delområdena och ge plats åt begrepp som eleven ännu knappt har prövat. Svaren fortsätter att räknas till frågans delområde. Utvärdera förslaget med enkla antal frågor, rätt och fel per begrepp i lärarvyn.

@@ -162,3 +162,45 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   await expect(page.getByRole('group', { name: 'Svarsalternativ' })).toBeVisible()
   expect((await readState(page)).problem.skill).toBe('geometry_solids')
 })
+
+test('planar geometry contrasts a square and rhombus before testing rectangle membership', async ({ page, request }, testInfo) => {
+  const pupil = await createPupil(request, { name: 'Plan variation ' + Math.random().toString(36).slice(2, 8), operations: ['addition'] })
+  await login(page, pupil)
+  await page.getByText('Välj annan träning', { exact: true }).tap()
+  await page.getByRole('button', { name: 'Plana figurer', exact: true }).tap()
+  await expect(page.getByText('Känn igen', { exact: true })).toBeVisible()
+  for (let index = 0; index < 5; index += 1) {
+    const problem = await answer(page, true)
+    expect(problem.level).toBe(1)
+    await nextQuestion(page)
+  }
+  const expected = ['square-contrast-angles', 'square-contrast-rotation', 'square-contrast-scale', 'rectangle-contrast-square']
+  for (const taskId of expected.slice(0, 3)) {
+    const problem = await answer(page, true)
+    expect(problem.values.geometryTaskId).toBe(taskId)
+    await expect(page.getByText(problem.choiceTask.explanationSv, { exact: true })).toBeVisible()
+    if (taskId === expected[0]) {
+      expect(problem.level).toBe(1)
+      await page.screenshot({ path: testInfo.outputPath('square-rhombus-contrast.png') })
+    }
+    await nextQuestion(page)
+    await expect(page.getByText('Jämför och namnge', { exact: true })).toBeVisible()
+  }
+
+  await expect(page.getByRole('heading', { name: 'Markera alla rektanglar.' })).toBeVisible()
+  const { problem } = await readState(page)
+  expect(problem.values.geometryTaskId).toBe(expected[3])
+  const choices = page.getByRole('group', { name: 'Svarsalternativ' }).getByRole('button')
+  await choices.nth(problem.choiceTask.options.findIndex(option => option.id === 'rectangle-standard')).tap()
+  await page.getByRole('button', { name: 'Svara', exact: true }).tap()
+  await expect(page.getByText('En rektangel har fyra räta vinklar. Därför är kvadraten också en rektangel.')).toBeVisible()
+  await expect(choices.nth(problem.choiceTask.options.findIndex(option => option.id === 'square-standard')))
+    .toHaveAttribute('data-answer-feedback', 'correct')
+  await page.screenshot({ path: testInfo.outputPath('rectangle-contains-square.png') })
+
+  await expect.poll(async () => {
+    const profile = await readServerProfile(request, pupil.studentId)
+    return profile.problemLog.filter(row => expected.includes(row.values?.geometryTaskId))
+      .map(row => [row.values.geometryTaskId, row.skill, row.correct])
+  }).toEqual(expected.map((id, index) => [id, 'geometry_plane', index < 3]))
+})

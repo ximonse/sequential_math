@@ -10,11 +10,16 @@ export default function GeometryProblemView({ problem, geometryCompleted, feedba
   const task = problem.choiceTask
   const speech = usePracticeSpeech({ studentId, mode: speechMode, cue: problem.id, text: task.promptSv })
   const selected = decodeGeometrySelection(inputValue)
+  const planePractice = problem.skill === 'geometry_plane'
+    ? (problem.level === 1 ? 'Känn igen' : 'Jämför och namnge') : ''
   const correctLabels = task.options.flatMap((option, index) => task.correctOptionIds.includes(option.id)
     ? [option.labelSv || `Bild ${index + 1}`] : [])
   return <section {...speech.gestureProps} className="rounded-xl border border-gray-200 bg-white p-3 text-gray-800 shadow-sm sm:p-4 [&_.screening-image-question]:text-inherit">
     <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-      <p className="text-sm font-medium text-gray-600">Geometri · nivå {problem.level}</p>
+      <div className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-gray-600">
+        <p>Geometri · nivå {problem.level}</p>
+        {planePractice && <p>{planePractice}</p>}
+      </div>
       <PracticeSpeechControls speech={speech} />
     </div>
     <QuestionCard align="left" size="text"><h3 {...speech.readable(task.promptSv, true)}>{task.promptSv}</h3></QuestionCard>
@@ -22,9 +27,14 @@ export default function GeometryProblemView({ problem, geometryCompleted, feedba
       onChange={ids => onInputChange(encodeGeometrySelection(ids))}
       getFeedback={feedback ? id => choiceFeedback(id, selected, task.correctOptionIds, reveal) : undefined} />
     <div className="mt-3 flex flex-wrap items-center gap-3">
-      {reveal && <p role="status" className={`text-xl font-semibold ${feedback.correct ? 'text-green-800' : 'text-gray-800'}`}>
-        {feedback.correct ? 'Rätt!' : `Rätt svar är ${correctLabels.join(' och ')}.`}
-      </p>}
+      {reveal && <div className="min-w-0">
+        <p role="status" className={`text-xl font-semibold ${feedback.correct ? 'text-green-800' : 'text-gray-800'}`}>
+          {feedback.correct ? 'Rätt!' : `Rätt svar är ${correctLabels.join(' och ')}.`}
+        </p>
+        {task.explanationSv && <p className="mt-1 text-sm text-gray-700" {...speech.readable(task.explanationSv, true)}>
+          {task.explanationSv}
+        </p>}
+      </div>}
       <button type="button" disabled={feedback ? !reveal : selected.length === 0}
         onClick={feedback ? onNext : onSubmit}
         className="answer-submit-button ml-auto rounded-lg bg-blue-700 font-semibold text-white hover:bg-blue-800 disabled:opacity-50">

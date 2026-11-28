@@ -35,6 +35,27 @@ En hel bildomgång i Plana figurer innehåller nu 15 frågor. Nya uppdrag som om
 
 Nästa steg är att följa upp pilotfrågorna med elevsvar och ta fram fler jämförbara exempel i Linjer och sträckor samt Kroppar (3D) inför blandad repetition.
 
+### Följ upp variationen i Plana figurer
+
+**Förslag till uppföljning.** Följ ett mål i taget, först **Skilja kvadrat från romb och känna igen kvadraten som rektangel**. Kontrast, generalisering och fusion beskriver vad uppgifterna låter eleven urskilja. I Framsteg visar vi elevens faktiska svar i respektive typ av uppgift. [Kullberg, Runesson Kempe och Marton](https://link.springer.com/article/10.1007/s11858-017-0858-4)
+
+| Vad vi följer | Vad eleven får visa | Exempel på vad läraren ser |
+|---|---|---|
+| **Kontrast** | Väljer kvadraten i jämförelse med en romb. Sidorna är lika långa i båda figurerna och vinklarna skiljer dem åt. | Upprätt kvadrat vald. 1 rätt av 1 svar. |
+| **Generalisering, läge** | Känner igen kvadraten när den vrids med samma sidlängd. | Vriden kvadrat vald. 1 rätt av 1 svar. |
+| **Generalisering, storlek** | Känner igen en mindre kvadrat i samma läge som den första. | Ej prövat. |
+| **Kategoritillhörighet** | Markerar både kvadraten och den avlånga rektangeln när alla rektanglar efterfrågas. | Markerade den avlånga rektangeln. Utelämnade kvadraten. |
+| **Kombinera egenskaper, fusion** | Använder lika långa sidor och räta vinklar tillsammans för att sortera och ge flera giltiga namn åt nya fyrhörningar. | Planerat frågeinnehåll. |
+
+Tabellen visar ett fiktivt elevexempel. De första fyra raderna har var sin befintlig pilotfråga. Första lärarvyn kan visa **Ej prövat** eller faktiska antal rätt och besvarade, med möjlighet att se vilka alternativ eleven valde. Läs från sparat fråge-ID, frågeversion, tidpunkt och valda alternativ. En ny facitversion ska gå att särskilja från äldre frågor som eleven redan besvarat.
+
+Använd **Visat i nya exempel** först efter stöd från genuint olika exempel vid flera tillfällen, gärna med en ny fråga innan återkoppling visas för den. Upprepning av exakt samma fråga ger träningshistorik. Enstaka felsvar följs upp som observationer och kan ge idéer till nästa fråga. Svarstid används bara när målet handlar om flyt.
+
+I elevens **Framsteg** räcker till exempel **Fortsätt med rektanglar** och en **Öva**-knapp. Läraren kan öppna de fem raderna för att se underlaget. Börja med lärarvyn för de fyra pilotfrågorna och pröva vad uppföljningen ger. Lägg till en användbar elevrekommendation när övningen kan öppna just det föreslagna innehållet.
+
+- [ ] De fyra pilotfrågorna går att följa separat från sparade svar, inklusive om eleven utelämnade kvadraten i rektangelfrågan.
+- [ ] Fler jämförbara uppgifter prövas innan starkare signaler införs, inklusive ett moment där eleven kombinerar båda egenskaperna.
+
 ## Etapp 3. Blandad geometri
 
 Lägg till ett eget repetitionsval när varje delområde har flera bra exempel. Varva frågor från de tre delområdena och ge plats åt begrepp som eleven ännu knappt har prövat. Svaren fortsätter att räknas till frågans delområde. Utvärdera förslaget med enkla antal frågor, rätt och fel per begrepp i lärarvyn.

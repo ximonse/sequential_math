@@ -15,8 +15,20 @@ async function answer(page, correct) {
   for (const id of ids) await choices.nth(task.options.findIndex(option => option.id === id)).tap()
   await expect(submit).toBeEnabled()
   expect((await readState(page)).phase).toBe('answering')
+  await expect(submit).toHaveCSS('min-height', '56px')
+  await expect(submit).toHaveCSS('font-size', '20px')
+  expect(await submit.evaluate(button => Math.abs(button.getBoundingClientRect().right - button.parentElement.getBoundingClientRect().right) < 1)).toBe(true)
   await submit.tap()
+  if (!correct) {
+    const wrongOption = choices.nth(task.options.findIndex(option => option.id === ids[0]))
+    await expect(wrongOption).toHaveAttribute('data-answer-feedback', 'incorrect')
+  }
   await expect(page.getByText(correct ? 'Rätt!' : /^Rätt svar är /)).toBeVisible()
+  for (const id of task.correctOptionIds) {
+    const rightOption = choices.nth(task.options.findIndex(option => option.id === id))
+    await expect(rightOption).toHaveAttribute('data-answer-feedback', 'correct')
+    await expect(rightOption).toHaveCSS('background-color', 'rgb(220, 252, 231)')
+  }
   return problem
 }
 
@@ -26,17 +38,63 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   const tag = Math.random().toString(36).slice(2, 8)
   const klass = { classId: `geometry-${tag}`, className: `Geometri ${tag}` }
   const pupil = await createPupil(request, { ...klass, name: `Geometri ${tag}`, operations: ['addition'] })
+  await page.addInitScript(() => {
+    window.__geometrySpeech = []
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: { cancel() {}, speak({ text, lang }) { if (text.trim()) window.__geometrySpeech.push({ text, lang }) } }
+    })
+    window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text } }
+  })
   await login(page, pupil)
+  const progressToggle = page.getByText('Se mina framsteg', { exact: true })
+  const geometryProgress = page.getByRole('region', { name: 'Geometri', exact: true })
+  await progressToggle.tap()
+  await expect(geometryProgress.getByText('Ej påbörjat', { exact: true })).toHaveCount(3)
+  await progressToggle.tap()
+  await page.getByText('Välj annan träning', { exact: true }).tap()
+  await expect(page.getByRole('region', { name: 'Geometri', exact: true }).getByRole('button')).toHaveCount(3)
   await page.getByRole('button', { name: 'Linjer och sträckor', exact: true }).tap()
   for (let index = 0; index < 4; index += 1) {
     expect((await answer(page, true)).level).toBe(1)
     await nextQuestion(page)
   }
   await expect(page.getByText('Geometri · nivå 2', { exact: true })).toBeVisible()
+  expect(await page.evaluate(() => window.__geometrySpeech)).toEqual([])
+  const nameOption = page.getByRole('group', { name: 'Svarsalternativ' }).getByRole('button').first()
+  const nameText = await nameOption.getAttribute('aria-label')
+  await nameOption.press('Alt+l')
+  await expect.poll(() => page.evaluate(() => window.__geometrySpeech.at(-1))).toEqual({ text: nameText, lang: 'sv-SE' })
+  await expect(nameOption).toHaveAttribute('aria-pressed', 'false')
   await expect(page.getByRole('group', { name: 'Svarsalternativ' })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('geometry-pupil.png') })
+  const completed = page.getByText('Nivå 2 klarad!', { exact: false })
+  await expect(completed).toHaveCount(0)
+  for (let index = 0; index < 4; index += 1) {
+    expect((await answer(page, true)).level).toBe(2)
+    if (index < 3) {
+      await expect(completed).toHaveCount(0)
+      await nextQuestion(page)
+    }
+  }
+  await expect(completed).toBeVisible()
+  await expect(page.locator('h3')).toHaveCSS('font-size', '20px')
+  await page.screenshot({ path: testInfo.outputPath('geometry-level-completed.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.locator('h3')).toHaveCSS('font-size', '18px')
+  await expect(completed).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('geometry-level-completed-phone.png') })
+  await page.setViewportSize({ width: 1024, height: 768 })
+  await page.reload()
+  await expect(completed).toBeVisible()
 
   await page.getByRole('button', { name: 'Startsida', exact: true }).tap()
+  await page.getByText('Välj annan träning', { exact: true }).tap()
+  await page.getByRole('button', { name: 'Kroppar (3D)', exact: true }).tap()
+  await expect(page.getByText('Geometri · nivå 1', { exact: true })).toBeVisible()
+  expect((await readState(page)).problem.skill).toBe('geometry_solids')
+  await page.getByRole('button', { name: 'Startsida', exact: true }).tap()
+  await page.getByText('Välj annan träning', { exact: true }).tap()
   await page.getByRole('button', { name: 'Plana figurer', exact: true }).tap()
   await expect(page.getByRole('heading', { name: 'Markera alla månghörningar.' })).toBeVisible()
   const options = page.getByRole('group', { name: 'Svarsalternativ' }).getByRole('button')
@@ -54,6 +112,8 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   await selectOnlyClass(teacherPage, klass.className)
   await openTab(teacherPage, 'Uppdrag & tickets')
   const creator = teacherPage.getByRole('region', { name: 'Geometri', exact: true })
+  await expect(creator.getByLabel('Uppläsning')).toHaveValue('manual')
+  await creator.getByLabel('Uppläsning').selectOption('off')
   await creator.getByRole('checkbox', { name: 'Linjer och sträckor', exact: true }).check()
   await creator.getByRole('button', { name: 'Skapa geometriuppdrag', exact: true }).click()
   const row = teacherPage.locator('div.rounded.border', { hasText: 'asg_' }).filter({ hasText: 'Geometri – Linjer och sträckor' }).first()
@@ -62,8 +122,11 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
 
   await page.goto(`${link.pathname}${link.search}`)
   await expect(page.getByText(/Uppdrag: Geometri/)).toBeVisible()
+  await expect(page.getByText('Håll på texten för att lyssna.')).toHaveCount(0)
+  await expect(page.locator('[data-practice-speech]')).toHaveCount(0)
   const wrong = await answer(page, false)
   expect(wrong.skill).toBe('geometry_lines')
+  await page.screenshot({ path: testInfo.outputPath('geometry-correction.png') })
   const readAssignmentAnswers = async () => (await readServerProfile(request, pupil.studentId))?.recentProblems
     ?.filter(result => result.domain === 'geometry' && result.trainingContext?.assignmentId) ?? []
   await expect.poll(async () => (await readAssignmentAnswers()).length).toBe(1)
@@ -87,4 +150,57 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   await expect(table.getByRole('row').nth(1).getByRole('cell').first()).toHaveText('1')
   await teacherPage.screenshot({ path: testInfo.outputPath('geometry-teacher.png') })
   await teacherContext.close()
+
+  await page.goto('/student/' + pupil.studentId)
+  await progressToggle.tap()
+  await expect(geometryProgress).toContainText('4 av 4 begrepp prövade · Rätt på 9 av 10 senaste svar')
+  await expect(geometryProgress).toContainText('1 av 11 begrepp prövade · Rätt på 1 av 1 senaste svar')
+  await expect(geometryProgress.getByText('Ej påbörjat', { exact: true })).toHaveCount(1)
+  await geometryProgress.screenshot({ path: testInfo.outputPath('geometry-progress.png') })
+  await geometryProgress.getByRole('button', { name: 'Öva Kroppar (3D)', exact: true }).tap()
+  await expect(page).toHaveURL(/mode=geometry_solids/)
+  await expect(page.getByRole('group', { name: 'Svarsalternativ' })).toBeVisible()
+  expect((await readState(page)).problem.skill).toBe('geometry_solids')
+})
+
+test('planar geometry contrasts a square and rhombus before testing rectangle membership', async ({ page, request }, testInfo) => {
+  const pupil = await createPupil(request, { name: 'Plan variation ' + Math.random().toString(36).slice(2, 8), operations: ['addition'] })
+  await login(page, pupil)
+  await page.getByText('Välj annan träning', { exact: true }).tap()
+  await page.getByRole('button', { name: 'Plana figurer', exact: true }).tap()
+  await expect(page.getByText('Känn igen', { exact: true })).toBeVisible()
+  for (let index = 0; index < 5; index += 1) {
+    const problem = await answer(page, true)
+    expect(problem.level).toBe(1)
+    await nextQuestion(page)
+  }
+  const expected = ['square-contrast-angles', 'square-contrast-rotation', 'square-contrast-scale', 'rectangle-contrast-square']
+  for (const taskId of expected.slice(0, 3)) {
+    const problem = await answer(page, true)
+    expect(problem.values.geometryTaskId).toBe(taskId)
+    await expect(page.getByText(problem.choiceTask.explanationSv, { exact: true })).toBeVisible()
+    if (taskId === expected[0]) {
+      expect(problem.level).toBe(1)
+      await page.screenshot({ path: testInfo.outputPath('square-rhombus-contrast.png') })
+    }
+    await nextQuestion(page)
+    await expect(page.getByText('Jämför och namnge', { exact: true })).toBeVisible()
+  }
+
+  await expect(page.getByRole('heading', { name: 'Markera alla rektanglar.' })).toBeVisible()
+  const { problem } = await readState(page)
+  expect(problem.values.geometryTaskId).toBe(expected[3])
+  const choices = page.getByRole('group', { name: 'Svarsalternativ' }).getByRole('button')
+  await choices.nth(problem.choiceTask.options.findIndex(option => option.id === 'rectangle-standard')).tap()
+  await page.getByRole('button', { name: 'Svara', exact: true }).tap()
+  await expect(page.getByText('En rektangel har fyra räta vinklar. Därför är kvadraten också en rektangel.')).toBeVisible()
+  await expect(choices.nth(problem.choiceTask.options.findIndex(option => option.id === 'square-standard')))
+    .toHaveAttribute('data-answer-feedback', 'correct')
+  await page.screenshot({ path: testInfo.outputPath('rectangle-contains-square.png') })
+
+  await expect.poll(async () => {
+    const profile = await readServerProfile(request, pupil.studentId)
+    return profile.problemLog.filter(row => expected.includes(row.values?.geometryTaskId))
+      .map(row => [row.values.geometryTaskId, row.skill, row.correct])
+  }).toEqual(expected.map((id, index) => [id, 'geometry_plane', index < 3]))
 })

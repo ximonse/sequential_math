@@ -25,6 +25,21 @@ describe('assignments payload encoding', () => {
     expect(decodeAssignmentPayload(encodeAssignmentPayload({ id: 'asg_f2', kind: 'focus', focusMode: 'nope' })).focusMode).toBe('discover')
   })
 
+  it('keeps speech modes, defaults, and old automatically read concept assignments', () => {
+    const concept = { id: 'concept', kind: 'concept', conceptDeckId: 'operations' }
+    const geometry = { id: 'geometry', problemTypes: ['geometry_lines', 'geometry_solids'] }
+    for (const assignment of [concept, geometry]) {
+      expect(decodeAssignmentPayload(encodeAssignmentPayload(assignment)).speechMode).toBe('manual')
+      for (const speechMode of ['manual', 'automatic', 'off']) {
+        expect(decodeAssignmentPayload(encodeAssignmentPayload({ ...assignment, speechMode })).speechMode).toBe(speechMode)
+      }
+    }
+    const oldLink = Buffer.from(JSON.stringify({ ...concept, conceptSpeechByDefault: true })).toString('base64url')
+    expect(decodeAssignmentPayload(oldLink).speechMode).toBe('automatic')
+    expect(decodeAssignmentPayload(encodeAssignmentPayload({ ...concept, speechMode: 'off', conceptSpeechByDefault: true })).speechMode).toBe('off')
+    expect(decodeAssignmentPayload(encodeAssignmentPayload({ id: 'math', problemTypes: ['addition'], speechMode: 'off' })).speechMode).toBeUndefined()
+  })
+
   it('roundtrips standard assignment payload', () => {
     const encoded = encodeAssignmentPayload({
       id: 'asg_test_1',

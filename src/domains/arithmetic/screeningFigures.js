@@ -125,7 +125,14 @@ const additions = {
     tags: ['triangel', 'rätvinklig triangel', 'mått', 'area'], properties: { sides: 3, corners: 3 } },
   'cuboid-words': { ...plain, dimensions: 3, nameSv: 'Rätblock med längd, bredd och höjd',
     draw: `<g transform="translate(8 0)">${cuboidFrame}${label(65, 112, 'längd', 'middle', 11)}${label(21, 85, 'höjd', 'end', 11)}${label(121, 95, 'bredd', 'start', 11)}</g>`,
-    tags: ['rätblock', 'volym', 'längd', 'bredd', 'höjd'], properties: { faces: 6, corners: 8, edges: 12 } }
+    tags: ['rätblock', 'volym', 'längd', 'bredd', 'höjd'], properties: { faces: 6, corners: 8, edges: 12 } },
+  // Matched figures for contrasting equal sides and right angles in free practice.
+  'rhombus-equal-sides': { ...plain, nameSv: 'Romb utan räta vinklar',
+    draw: polygon('8,101 98,101 152,29 62,29'),
+    tags: ['romb', 'parallellogram', 'fyrhörning'], properties: { sides: 4, corners: 4 } },
+  'square-turned-same-size': { ...plain, nameSv: 'Kvadrat vriden i samma storlek',
+    draw: '<g transform="rotate(25 80 65)">' + square + '</g>',
+    tags: classes.square, properties: properties.square }
 }
 for (const [kind, item] of Object.entries(additions)) drawings[kind] = item.draw
 const variantName = variant => variant === 'rotated' ? ' · vriden' : variant === 'small' ? ' · mindre' : ''

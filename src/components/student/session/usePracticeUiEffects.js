@@ -6,6 +6,8 @@ import {
 } from '../../../lib/studentPresence'
 import { beginHiddenTracking, endHiddenTracking } from './sessionUtils'
 
+export const PRACTICE_AUTO_CONTINUE_DELAY_MS = 3000
+
 export function usePracticeUiEffects({
   profile,
   currentProblem,
@@ -19,7 +21,7 @@ export function usePracticeUiEffects({
   dailyLevelStreakMilestone,
   attentionRef,
   presenceSyncRef,
-  autoContinueDelay = 3000,
+  autoContinueDelay = PRACTICE_AUTO_CONTINUE_DELAY_MS,
   persistProfile
 }) {
   const updatePresence = useCallback((options = {}) => {

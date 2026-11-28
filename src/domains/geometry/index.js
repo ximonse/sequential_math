@@ -40,6 +40,7 @@ function verifyContent(problem) {
     && normalized.options.every(option => JSON.stringify(option) === JSON.stringify(expectedOptions.get(option.id)))
     && JSON.stringify(normalized.images) === JSON.stringify(entry.images)
     && normalized.responseMode === entry.responseMode && problem.display?.text === entry.promptSv
+    && problem.choiceTask.explanationSv === entry.explanationSv
     && JSON.stringify(optionOrder) === JSON.stringify(options)
     && encodeGeometrySelection(entry.correctOptionIds) === problem.answer.correct
     && encodeGeometrySelection(normalized.correctOptionIds) === problem.answer.correct

@@ -508,7 +508,7 @@ export default function DashboardLayout({
     )
     if (id === 'assignments') return (
       <AssignmentsPanel
-        assignments={assignments}
+        assignments={assignments} students={filteredStudents}
         assignmentTargets={assignmentTargets}
         foreignActiveAssignments={foreignActiveAssignments}
         recipients={recipients}
@@ -766,15 +766,14 @@ export default function DashboardLayout({
                 </button>
               </div>
             )}
-            {activeWorkspace === 'teaching' && (
+            {activeWorkspace === 'teaching' && <>
               <RecipientPicker classes={classes} groups={teacherGroups} students={students}
                 recipients={recipients} onChange={setDeliveryPicks}
                 followsFilter={recipientsFollowFilter} onFollowFilter={() => setDeliveryPicks(null)} />
-            )}
-            {activeWorkspace === 'teaching' && (
               <RecipientActiveOverview recipients={recipients} assignmentTargets={assignmentTargets}
-                assignments={assignments} groups={teacherGroups} students={students} />
-            )}
+                assignments={assignments} groups={teacherGroups} students={students} teacherId={teacherIdentity.teacherId}
+                teacherIsAdmin={teacherIsAdmin} onDeactivate={handleDeactivateAssignment} />
+            </>}
             {isScreening && <div>{renderPanelContent('ncm-grid')}</div>}
             {!isScreening && (activeWorkspace === 'support' && isDirectStudentView
               ? ['detail', 'difficulty-analysis', 'training-priority']

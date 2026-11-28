@@ -13,6 +13,7 @@ const TEACHER_LIST_FIELDS = [
   'activity',
   'masteryFacts',
   'recentProblems',
+  'conceptPractice',
   'stats',
   'telemetry',
   'ticketInbox',

@@ -7,8 +7,7 @@ export default function ForeignAssignmentRows({ items = [], formatAssignmentSumm
   return (
     <div className="mt-3 space-y-1.5">
       <p className="text-xs font-medium text-gray-600">
-        Aktiva uppdrag som inte finns i ditt uppdragsbibliotek — visas bara,
-        kan inte aktiveras eller avaktiveras härifrån
+        Aktiva uppdrag utanför ditt uppdragsbibliotek
       </p>
       {items.map(item => (
         <div

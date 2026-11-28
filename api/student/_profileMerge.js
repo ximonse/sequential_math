@@ -341,6 +341,8 @@ export function mergeProfiles(existingProfile, incomingProfile) {
   merged.tableDrill = mergeTableDrill(existingProfile?.tableDrill, incomingProfile?.tableDrill)
   merged.telemetry = mergeTelemetry(existingProfile?.telemetry, incomingProfile?.telemetry)
   merged.ticketResponses = mergeTicketResponses(existingProfile?.ticketResponses, incomingProfile?.ticketResponses)
+  if (Array.isArray(existingProfile?.conceptPractice)) merged.conceptPractice = existingProfile.conceptPractice
+  else delete merged.conceptPractice
   merged.attentionHistory = mergeAttentionHistory(existingProfile?.attentionHistory, incomingProfile?.attentionHistory)
   merged.ticketRevealAll = mergeTicketRevealAll(existingProfile?.ticketRevealAll, incomingProfile?.ticketRevealAll)
   merged.ticketInbox = mergeTicketInbox(existingProfile?.ticketInbox, incomingProfile?.ticketInbox)

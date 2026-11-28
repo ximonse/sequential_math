@@ -78,11 +78,11 @@ export function buildDashboardAssignmentActions({
     if (targets.length) void saveTargets(targets, { action: 'deactivate', assignmentId })
   }
 
-  const handleCreatePreset = (presetKey, targetCount, breakGames = false, workspaces) => {
+  const handleCreatePreset = (presetKey, targetCount, breakGames = false, workspaces, speechMode) => {
     const base = getPresetConfig(presetKey)
     if (!base) return
     const cap = Math.floor(Number(targetCount))
-    const preset = { ...base, breakGames, ...(workspaces ? { workspaces } : {}), ...(Number.isFinite(cap) && cap > 0 ? { targetCount: cap } : {}) }
+    const preset = { ...base, breakGames, speechMode, ...(workspaces ? { workspaces } : {}), ...(Number.isFinite(cap) && cap > 0 ? { targetCount: cap } : {}) }
     const created = createAssignment(preset)
     if (!created) {
       setDashboardStatus('Kunde inte skapa uppdrag just nu.')
@@ -133,12 +133,16 @@ export function buildDashboardAssignmentActions({
     setDashboardStatus(`${assignment.title || 'Uppdraget'} är aktivt för ${saved.join(', ')}.${failed ? ` ${failed} klass(er) eller grupp(er) kunde inte sparas.` : ''}`)
   }
 
-  // Ends the assignment for the selected classes and groups, or everywhere with none selected.
-  const handleDeactivateAssignment = async (assignmentId) => {
+  // A recipient row passes an exact target. The library keeps its existing selection behaviour.
+  const handleDeactivateAssignment = async (assignmentId, recipient = null) => {
     const assignment = assignments.find(item => item.id === assignmentId) || getAssignmentById(assignmentId)
     const active = getActiveTargets(assignmentId)
-    const selected = getTargets({ selectedOnly: true })
+    const selected = recipient ? [recipient] : getTargets({ selectedOnly: true })
     const targets = selected.length ? active.filter(target => selected.some(item => item.type === target.type && item.id === target.id)) : active
+    if (!targets.length) {
+      setDashboardStatus('Uppdraget är inte längre aktivt för mottagaren.')
+      return
+    }
     const { saved, failed } = await saveTargets(targets, { action: 'deactivate', assignmentId })
     setDashboardStatus(failed
       ? `${assignment?.title || 'Uppdraget'} avaktiverades för ${saved.join(', ') || 'inga'}. ${failed} kunde inte sparas.`

@@ -32,7 +32,7 @@ import {
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
 import { isGeometrySkill } from '../../domains/geometry/groups.js'
-import { countGeometryAssignmentAnswers, isGeometryAssignment } from '../../domains/geometry/progress.js'
+import { countGeometryAssignmentAnswers, isGeometryAssignment, isGeometryFinalLevelPassed } from '../../domains/geometry/progress.js'
 import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 import { addMathPracticeSessionResult } from '../../lib/studentProfile'
 import { numberBondCoverageKeys, fluencyLevelTargetSec } from '../../lib/coverageFluency'
@@ -477,6 +477,8 @@ function StudentSession() {
   const weekStart = getStartOfWeekTimestamp()
   const masteredHistorical = getMasteryForOperation(profile, currentOperation)
   const masteredThisWeek = getMasteryForOperation(profile, currentOperation, { since: weekStart })
+  const geometryCompleted = currentProblem?.domain === 'geometry' && isGeometryFinalLevelPassed(
+    profile.problemLog?.length ? profile.problemLog : profile.recentProblems, currentProblem.skill)
   const revisitingMasteredLevel = isLevelFocusMode
     && getMasteryForOperation(profile, mode).includes(fixedPracticeLevel)
 
@@ -491,6 +493,7 @@ function StudentSession() {
 
   return (
     <SessionPage
+      studentId={studentId}
       profileName={profile.displayAlias}
       sessionCount={sessionCount}
       streak={streak}
@@ -507,6 +510,7 @@ function StudentSession() {
       onContinueAdaptively={continueAdaptively}
       sessionError={sessionError}
       currentProblem={currentProblem}
+      geometryCompleted={geometryCompleted}
       feedback={feedback}
       answer={answer}
       onInputChange={setAnswer}

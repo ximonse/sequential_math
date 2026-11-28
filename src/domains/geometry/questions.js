@@ -68,8 +68,44 @@ function nameQuestion(skill, [concept, , figureId], group) {
   }
 }
 
+const planeVariation = [
+  {
+    taskId: 'square-contrast-angles', concept: 'square', promptSv: 'Vilken figur är en kvadrat?',
+    figureIds: ['square-standard', 'rhombus-equal-sides'], correctOptionIds: ['square-standard'],
+    explanationSv: 'Båda figurerna har lika långa sidor. Kvadraten har också fyra räta vinklar.'
+  },
+  {
+    taskId: 'square-contrast-rotation', concept: 'square', promptSv: 'Vilken figur är en kvadrat?',
+    figureIds: ['square-turned-same-size', 'rhombus-equal-sides'], correctOptionIds: ['square-turned-same-size'],
+    explanationSv: 'När kvadraten vrids har den fortfarande fyra lika långa sidor och fyra räta vinklar.'
+  },
+  {
+    taskId: 'square-contrast-scale', concept: 'square', promptSv: 'Vilken figur är en kvadrat?',
+    figureIds: ['square-small', 'rhombus-equal-sides'], correctOptionIds: ['square-small'],
+    explanationSv: 'En liten kvadrat har fortfarande lika långa sidor och fyra räta vinklar.'
+  },
+  {
+    taskId: 'rectangle-contrast-square', concept: 'rectangle', promptSv: 'Markera alla rektanglar.',
+    figureIds: ['rectangle-standard', 'square-standard', 'rhombus-equal-sides', 'parallelogram-standard'],
+    correctOptionIds: ['rectangle-standard', 'square-standard'],
+    explanationSv: 'En rektangel har fyra räta vinklar. Därför är kvadraten också en rektangel.'
+  }
+].map(({ figureIds, ...task }) => ({
+  ...task, taskVersion: 1, skill: 'geometry_plane', minimumLevel: 1, images: [],
+  responseMode: task.correctOptionIds.length > 1 ? 'multiple' : 'single',
+  options: figureIds.map(picture)
+}))
+
+function imageQuestions(skill, group) {
+  return group.flatMap(item => {
+    const question = imageQuestion(skill, item, group)
+    // Introduce the contrast before the older rectangle question shows the same inclusion.
+    return question.taskId === 'hexagon-image' ? [question, ...planeVariation] : [question]
+  })
+}
+
 export const geometryQuestions = Object.fromEntries(Object.entries(concepts).map(([skill, group]) => [skill, [
-  ...group.map(item => imageQuestion(skill, item, group)),
+  ...imageQuestions(skill, group),
   ...group.map(item => nameQuestion(skill, item, group))
 ]]))
 

@@ -1,3 +1,5 @@
+import { readActiveAssignments } from '../../../lib/activeAssignments.js'
+
 const keyOf = value => String(value ?? '')
 
 // Collects what is active for each picked recipient: assignments given to it
@@ -7,6 +9,10 @@ export function buildRecipientOverview(recipients = [], { assignmentTargets = []
   const studentByKey = new Map(students.map(item => [keyOf(item.studentId).toLowerCase(), item]))
   return recipients.map(pick => {
     const target = assignmentTargets.find(item => item.type === pick.type && keyOf(item.id) === keyOf(pick.id))
+    const directAssignments = readActiveAssignments(target?.record).map(({ assignment, activatedBy }) => ({
+      id: assignment.id, title: titleById.get(assignment.id) || assignment.title,
+      inLibrary: titleById.has(assignment.id), activatedBy
+    }))
     let pupils = []
     if (pick.type === 'class') {
       pupils = students.filter(student => [student.classId, ...(student.classIds || [])].map(keyOf).includes(keyOf(pick.id)))
@@ -28,7 +34,7 @@ export function buildRecipientOverview(recipients = [], { assignmentTargets = []
       id: keyOf(pick.id),
       name: target?.name || pupils[0]?.name || keyOf(pick.id),
       pupilCount: pupils.length,
-      assignmentTitles: (target?.assignmentIds || []).map(id => titleById.get(keyOf(id))).filter(Boolean),
+      directAssignments,
       tickets: [...tickets].map(([title, count]) => ({ title, count }))
     }
   })

@@ -1,4 +1,8 @@
-import { useState } from 'react'
+import { DEFAULT_PRACTICE_SPEECH_MODE, PRACTICE_SPEECH_MODES } from '../../../lib/practiceSpeech.js'
+import { createAssignment } from '../../../lib/assignments.js'
+import { conceptDecks } from '../../../lib/conceptPractice.js'
+import ConceptAssignmentResults from './ConceptAssignmentResults.jsx'
+import { useEffect, useRef, useState } from 'react'
 import AssignmentQrDialog from './AssignmentQrDialog'
 import MathPracticeCreatorDialog from './MathPracticeCreatorDialog'
 import SubitizingCreatorDialog from './SubitizingCreatorDialog'
@@ -57,8 +61,19 @@ const PRESET_GROUPS = [
   ].map(([key, label]) => [key, label, TONES.other])
 ]
 
+function PracticeSpeechModeSelect({ value, onChange, inline = false }) {
+  return <label className={(inline ? '' : 'mb-2 ') + 'inline-flex flex-wrap items-center gap-2 text-sm'}>
+    Uppläsning
+    <select className="rounded border border-gray-300 bg-white px-2 py-1"
+      value={value} onChange={event => onChange(event.target.value)}>
+      {PRACTICE_SPEECH_MODES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+    </select>
+  </label>
+}
+
 export default function AssignmentsPanel({
   assignments,
+  students = [],
   assignmentTargets = [],
   foreignActiveAssignments = [],
   recipients = [],
@@ -82,6 +97,19 @@ export default function AssignmentsPanel({
   const [breakGames, setBreakGames] = useState(false)
   const [workspaces, setWorkspaces] = useState({ notebook: false, drawing: true })
   const [geometrySelection, setGeometrySelection] = useState([])
+  const [conceptSpeechMode, setConceptSpeechMode] = useState(DEFAULT_PRACTICE_SPEECH_MODE)
+  const [geometrySpeechMode, setGeometrySpeechMode] = useState(DEFAULT_PRACTICE_SPEECH_MODE)
+  const [createdConceptId, setCreatedConceptId] = useState('')
+  const createdConceptRow = useRef(null)
+  useEffect(() => {
+    if (createdConceptId) createdConceptRow.current?.focus()
+  }, [createdConceptId])
+
+  function createConceptAssignment(deckId) {
+    const assignment = createAssignment({ kind: 'concept', conceptDeckId: deckId, speechMode: conceptSpeechMode })
+    if (assignment) setCreatedConceptId(assignment.id)
+    onCreateMathPractice(assignment)
+  }
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -96,11 +124,21 @@ export default function AssignmentsPanel({
         {collapseControl}
       </div>
 
+      <AssignmentModuleBox title="Begrepp"
+        actions={<PracticeSpeechModeSelect value={conceptSpeechMode} onChange={setConceptSpeechMode} inline />}>
+        <div className="flex flex-wrap gap-2">
+          {Object.values(conceptDecks).map(deck => <button key={deck.id} type="button"
+            className={BUTTON_BASE + ' ' + TONES.custom}
+            onClick={() => createConceptAssignment(deck.id)}>Skapa uppdrag: {deck.title}</button>)}
+        </div>
+      </AssignmentModuleBox>
+
       <AssignmentModuleBox title="Arbetsytor" hint={HINTS.workspaces}>
         <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} showLegend={false} />
       </AssignmentModuleBox>
 
       <AssignmentModuleBox title="Geometri">
+        <PracticeSpeechModeSelect value={geometrySpeechMode} onChange={setGeometrySpeechMode} />
         <div className="flex flex-wrap items-center gap-2 text-sm">
           {Object.entries(geometryGroups).map(([skill, label]) => (
             <label key={skill} className="inline-flex items-center gap-1">
@@ -112,7 +150,7 @@ export default function AssignmentsPanel({
             </label>
           ))}
           <button type="button" disabled={!geometrySelection.length}
-            onClick={() => onCreatePreset(geometrySelection, undefined, false, { notebook: false, drawing: false })}
+            onClick={() => onCreatePreset(geometrySelection, undefined, false, { notebook: false, drawing: false }, geometrySpeechMode)}
             className={`${BUTTON_BASE} ${TONES.other} disabled:opacity-50`}>
             Skapa geometriuppdrag
           </button>
@@ -188,7 +226,12 @@ export default function AssignmentsPanel({
             const isActive = selectedTargets.length ? activeInSelected.length > 0 : activeIn.length > 0
             const canActivate = selectedTargets.length ? activeInSelected.length < selectedTargets.length : true
             return (
-            <div key={assignment.id} data-assignment-row className={`flex flex-wrap items-center justify-between gap-2 rounded border px-2 py-1.5 ${isActive ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-gray-100'}`}>
+            <div key={assignment.id} data-assignment-row
+              ref={assignment.id === createdConceptId ? createdConceptRow : undefined}
+              tabIndex={assignment.kind === 'concept' ? -1 : undefined}
+              role={assignment.kind === 'concept' ? 'group' : undefined}
+              aria-label={assignment.kind === 'concept' ? assignment.title : undefined}
+              className={`flex flex-wrap items-center justify-between gap-2 rounded border px-2 py-1.5 ${isActive ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-gray-100'}`}>
               <div className="min-w-0 text-sm">
                 <p className={`font-medium ${isActive ? 'text-gray-800' : 'text-gray-500'}`}>{assignment.title}</p>
                 <p className="text-gray-500">{formatAssignmentSummaryLine(assignment)}</p>
@@ -208,6 +251,9 @@ export default function AssignmentsPanel({
                 </button>
                 <button onClick={() => onDeleteAssignment(assignment.id)} className="rounded bg-red-100 px-1.5 py-0.5 text-[11px] text-red-700 hover:bg-red-200">Ta bort</button>
               </div>
+              {assignment.kind === 'concept' && <div className="basis-full">
+                <ConceptAssignmentResults assignment={assignment} students={students} classIds={selectedClassIds} />
+              </div>}
             </div>
             )
           })}

@@ -4,9 +4,10 @@ import { addProblemResult, createStudentProfile } from '../../lib/studentProfile
 import { decodeAssignmentPayload, encodeAssignmentPayload } from '../../lib/assignments.js'
 import { normalizeImageQuestion } from '../arithmetic/screeningImageQuestions.js'
 import geometryDomain from './index.js'
-import { encodeGeometrySelection, geometryQuestions } from './questions.js'
-import { countGeometryAssignmentAnswers, getGeometryLevel } from './progress.js'
-import { summarizeGeometry } from './statistics.js'
+import { encodeGeometrySelection, geometryQuestionById, geometryQuestions } from './questions.js'
+import { findScreeningFigure } from '../arithmetic/screeningFigures.js'
+import { countGeometryAssignmentAnswers, getGeometryLevel, isGeometryFinalLevelPassed } from './progress.js'
+import { summarizeGeometry, summarizeGeometryProgress } from './statistics.js'
 
 describe('geometry practice', () => {
   it('covers all 21 concepts with validated options', () => {
@@ -29,6 +30,36 @@ describe('geometry practice', () => {
         expect(geometryDomain.generate(skill, level, { recentGeometry }).values.geometryTaskId).toBe(expected[0])
       }
     }
+  })
+
+  it('keeps a controlled planar comparison in both levels and accepts the square as a rectangle', () => {
+    const skill = 'geometry_plane'
+    const stages = [
+      ['square-contrast-angles', 'square-standard'],
+      ['square-contrast-rotation', 'square-turned-same-size'],
+      ['square-contrast-scale', 'square-small']
+    ]
+    for (const level of [1, 2]) {
+      const history = [{ skill, values: { geometryTaskId: 'hexagon-image' } }]
+      for (const [id, square] of stages) {
+        const problem = geometryDomain.generate(skill, level, { recentGeometry: history })
+        expect(problem.values.geometryTaskId).toBe(id)
+        expect(problem.choiceTask.options.map(option => option.id).sort()).toEqual(['rhombus-equal-sides', square].sort())
+        expect(problem.choiceTask.correctOptionIds).toEqual([square])
+        expect(geometryDomain.verifyContent(problem).valid).toBe(true)
+        history.push(problem)
+      }
+      const final = geometryDomain.generate(skill, level, { recentGeometry: history })
+      expect(final.values).toMatchObject({ geometryTaskId: 'rectangle-contrast-square', geometryConcept: 'rectangle' })
+      expect(final.choiceTask.options.filter(option => findScreeningFigure(option.image.id).tags.includes('rektangel'))
+        .map(option => option.id).sort()).toEqual(['rectangle-standard', 'square-standard'])
+      expect(geometryDomain.evaluate(final, 'rectangle-standard').correct).toBe(false)
+      expect(geometryDomain.evaluate(final, encodeGeometrySelection(['rectangle-standard', 'square-standard'])).correct).toBe(true)
+      expect(geometryDomain.verifyContent(final).valid).toBe(true)
+    }
+    expect(geometryQuestionById['rectangle-image']).toMatchObject({
+      taskVersion: 1, correctOptionIds: ['rectangle-rotated', 'square-standard']
+    })
   })
 
   it('retains exact selection evidence without mastery or speed credit', () => {
@@ -54,6 +85,48 @@ describe('geometry practice', () => {
     expect(getGeometryLevel(profile.problemLog.map(row => ({ ...row, timeSpent: 25 })), skill)).toBe(1)
     expect(getGeometryLevel(profile.problemLog.map(row => ({ ...row, interruptionSuspected: true })), skill)).toBe(1)
     expect(selectNextProblemForProfile(profile, { allowedTypes: [skill] }).choiceTask.responseMode).toBe('name')
+  })
+
+  it.each([
+    ['geometry_lines', 4],
+    ['geometry_plane', 6],
+    ['geometry_solids', 6]
+  ])('recognizes final-level completion for %s from distinct level 2 responses', (skill, needed) => {
+    const finalTasks = geometryQuestions[skill].filter(task => task.minimumLevel === 2).slice(0, needed)
+    const rows = finalTasks.map((task, index) => ({
+      domain: 'geometry', skill, level: 2, correct: index > 0, timeSpent: 12,
+      values: { geometryTaskId: task.taskId }
+    }))
+    expect(isGeometryFinalLevelPassed(rows.slice(0, -1), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows.map(row => ({ ...row, level: 1 })), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows.map(row => ({ ...row, interruptionSuspected: true })), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows.map(row => ({ ...row, timeSpent: 13 })), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows, skill)).toBe(true)
+    expect(isGeometryFinalLevelPassed([...rows, ...rows.map(row => ({ ...row, correct: false }))], skill)).toBe(true)
+  })
+
+  it('projects distinct geometry concepts and the newest ten unique practice answers across saved history', () => {
+    const line = (timestamp, correct = true) => ({
+      domain: 'geometry', skill: 'geometry_lines', observationId: 'line:' + timestamp, timestamp, correct,
+      values: { geometryConcept: 'line' }
+    })
+    const legacy = { domain: 'geometry', problemId: 'legacy-ray', timestamp: 1, correct: false,
+      values: { geometryTaskId: 'ray-image' } }
+    const recent = { ...line(13, false), trainingContext: { assignmentId: 'geometry-assignment' } }
+    const diagnostic = { ...line(14), evidenceClass: 'diagnostic_only', values: { geometryConcept: 'diagonal' } }
+    const misplaced = { ...line(15), skill: 'geometry_plane', values: { geometryConcept: 'segment' } }
+    const problems = Array.from({ length: 11 }, (_, i) => line(i + 2))
+    const progress = summarizeGeometryProgress({
+      problemLog: [legacy, ...problems],
+      recentProblems: [{ ...legacy, observationId: 'legacy-ray:1' }, recent, ...problems.slice(-3), diagnostic, misplaced]
+    })
+    expect(progress).toEqual([
+      { id: 'geometry_lines', label: 'Linjer och sträckor', tried: 2, total: 4, recentCount: 10, recentCorrect: 9 },
+      { id: 'geometry_plane', label: 'Plana figurer', tried: 0, total: 11, recentCount: 0, recentCorrect: 0 },
+      { id: 'geometry_solids', label: 'Kroppar (3D)', tried: 0, total: 6, recentCount: 0, recentCorrect: 0 }
+    ])
+    expect(summarizeGeometryProgress({ recentProblems: [legacy, { ...legacy, observationId: 'legacy-ray:1' }] })[0])
+      .toMatchObject({ tried: 1, recentCount: 1, recentCorrect: 0 })
   })
 
   it('keeps assignment selection and counts each scoped observation once', () => {

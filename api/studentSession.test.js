@@ -90,6 +90,31 @@ describe('pilot student sessions', () => {
       else process.env.VERCEL_ENV = previousEnvironment
     }
   })
+  it('logs in with a valid pupil code and PIN on the same Preview host without APP_ORIGIN', async () => {
+    records.clear()
+    const id = 'E'.repeat(32), code = 'Gul Fyr Katt'
+    const host = 'sekvens-git-gamma-ximonses-projects.vercel.app'
+    records.set('class:6a', { id: '6a', teacherIds: ['teacher-1'] })
+    records.set(`student:${id}`, { ...profile(id, createQrSecret()), displayAlias: code })
+    records.set(studentLoginCodeIndexKey(code), id)
+    vi.stubEnv('APP_ORIGIN', undefined)
+    vi.stubEnv('VERCEL_ENV', 'preview')
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {})
+    try {
+      const login = response()
+      const request = { method: 'POST', body: { loginCode: code, pin: '1234' },
+        headers: { origin: `https://${host}`, 'x-forwarded-host': host }, socket: {} }
+      await handler(request, login)
+      expect(login).toMatchObject({ code: 201, data: { ok: true, student: { studentId: id } } })
+      const crossOrigin = response()
+      await handler({ ...request, headers: { ...request.headers, origin: 'https://other-project.vercel.app' } }, crossOrigin)
+      expect(crossOrigin).toMatchObject({ code: 401, data: { error: 'Inloggningen kunde inte bekräftas.' } })
+      expect(info).toHaveBeenCalledExactlyOnceWith('preview_student_login_denied', { reason: 'origin' })
+    } finally {
+      info.mockRestore()
+      vi.unstubAllEnvs()
+    }
+  })
   it('does not reveal whether an unknown or wrong credential failed', async () => {
     records.clear(); const id = 'B'.repeat(32), secret = createQrSecret(); records.set(`student:${id}`, profile(id, secret))
     const wrong = response(), unknown = response()

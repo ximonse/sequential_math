@@ -1,3 +1,5 @@
+import { summarizeGeometryProgress } from '../../domains/geometry/statistics.js'
+import { summarizeConceptProgress } from '../../lib/conceptPractice.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS, ALL_LEVELS as LEVELS } from '../../lib/operations'
@@ -241,6 +243,11 @@ function StudentHome() {
   }, [operationMasteryBoards])
 
   const tableStatus = useMemo(() => buildTableStatus(profile), [profile])
+  const geometryProgress = useMemo(() => summarizeGeometryProgress(profile), [profile])
+  const conceptProgress = useMemo(() => summarizeConceptProgress(profile), [profile])
+
+  const startGeometryPractice = skill => navigate('/student/' + studentId + '/practice?mode=' + skill)
+  const startConceptPractice = deckId => navigate('/student/' + studentId + '/concepts/' + deckId)
 
   const handleStudentLogout = () => {
     if (profile) {
@@ -472,8 +479,8 @@ function StudentHome() {
               operationProgress={operationProgress}
               talbildEnabled={classId !== '' && classConfig.classId === classId && classConfig.talbildEnabled === true}
               onStartTalbild={startTalbild}
-              onStartGeometryPractice={skill => navigate('/student/' + studentId + '/practice?mode=' + skill)}
-              onStartConceptPractice={deckId => navigate('/student/' + studentId + '/concepts/' + deckId)}
+              onStartGeometryPractice={startGeometryPractice}
+              onStartConceptPractice={startConceptPractice}
             />
           </div>
         </details>
@@ -484,7 +491,10 @@ function StudentHome() {
             <StudentHomeProgressCard
               operationMasteryBoards={operationMasteryBoards}
               onSelectLevel={startLevelPractice}
-              hasRecentProblems={profile.recentProblems.length > 0 || (Array.isArray(profile.problemLog) && profile.problemLog.length > 0)}
+              geometryProgress={geometryProgress}
+              conceptProgress={conceptProgress}
+              onStartGeometryPractice={startGeometryPractice}
+              onStartConceptPractice={startConceptPractice}
               masteryMinAttempts={MASTERY_MIN_ATTEMPTS}
               masteryMinSuccessRate={MASTERY_MIN_SUCCESS_RATE}
             />

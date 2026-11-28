@@ -121,3 +121,18 @@ export function latestConceptRun(profile, deck, assignmentId = '', classIds = []
   return profile?.conceptPractice?.findLast(run => run.deckId === deck.id && run.deckVersion === deck.version
     && run.assignmentId === assignmentId && (!classIds.length || classIds.includes(run.classIdAtAttempt))) ?? null
 }
+
+export function summarizeConceptProgress(profile) {
+  const history = profile?.conceptPractice || []
+  return Object.values(conceptDecks).map(deck => {
+    // The stored history is chronological. Opening a deck alone is not completed activity.
+    const run = history.findLast(run => run.deckId === deck.id && run.deckVersion === deck.version
+      && (deck.cards.some(card => Object.hasOwn(run.cards || {}, card.id))
+        || deck.exercises.some(exercise => typeof run.answers?.[exercise.id]?.correct === 'boolean')))
+    const turned = deck.cards.filter(card => Object.hasOwn(run?.cards || {}, card.id)).length
+    const answers = deck.exercises.map(exercise => run?.answers?.[exercise.id])
+      .filter(answer => typeof answer?.correct === 'boolean')
+    return { id: deck.id, label: deck.title, turned, cardTotal: deck.cards.length, answered: answers.length,
+      exerciseTotal: deck.exercises.length, correct: answers.filter(answer => answer.correct).length }
+  })
+}

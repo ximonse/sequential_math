@@ -17,6 +17,7 @@
 - [Preview](https://sekvens-git-codex-gamma-concept-practice-ximonses-projects.vercel.app) 2026-11-28: Commit f7143e1 med uppdaterade begreppskort, träningsmeny och tre ljudlägen är READY i sekvens Preview dpl_5DvuTM8oYJPUCdXKEXhBWTxGtSvr. Stående grenadress verifierad. Ett Git-triggat bygge. Elevflödet och ljudanropen är verifierade lokalt med simulerad uppläsning.
 - 2026-11-28: Begrepp låg helt utanför första surfplattevyn. Modulen ligger nu först i uppdragspanelen med tydliga Skapa uppdrag-knappar. När ett uppdrag skapats fokuseras dess rad så att Aktivera syns. Klickprovet verifierade skapande, klassaktivering och att eleven får begreppsuppdraget under Mina uppdrag.
 - 2026-11-28: Under Aktivt för valda mottagare visas aktiva uppdrag direkt från klass-, grupp- och elevposten, även äldre uppdrag och uppdrag utanför biblioteket. Behörig administratör kan avaktivera för den enskilda mottagaren via ordinarie API. Klickprovet verifierade att elevens direkta aktivering togs bort medan samma klassuppdrag låg kvar. Provad med syntetiska konton. Lokalt klart.
+- 2026-11-28: Etapp 1 i GEOMETRI_OCH_BEGREPP_FRAMSTEG_PLAN.md verifierad lokalt. I Se mina framsteg visas geometrins prövade begrepp och senaste svar per delområde samt begreppskortens vändningar och övningssvar från senaste övade omgången. Elevens Öva-knappar återanvänder fri träning. Klickproven kontrollerade tom historik, fri träning och uppdrag, omladdning samt rätt delområde. 1 454 tester och två pekprov gröna.
 
 ## 2026-11-26: Geometrins första träningsversion
 

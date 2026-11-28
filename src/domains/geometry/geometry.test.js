@@ -6,7 +6,7 @@ import { normalizeImageQuestion } from '../arithmetic/screeningImageQuestions.js
 import geometryDomain from './index.js'
 import { encodeGeometrySelection, geometryQuestions } from './questions.js'
 import { countGeometryAssignmentAnswers, getGeometryLevel, isGeometryFinalLevelPassed } from './progress.js'
-import { summarizeGeometry } from './statistics.js'
+import { summarizeGeometry, summarizeGeometryProgress } from './statistics.js'
 
 describe('geometry practice', () => {
   it('covers all 21 concepts with validated options', () => {
@@ -72,6 +72,30 @@ describe('geometry practice', () => {
     expect(isGeometryFinalLevelPassed(rows.map(row => ({ ...row, timeSpent: 13 })), skill)).toBe(false)
     expect(isGeometryFinalLevelPassed(rows, skill)).toBe(true)
     expect(isGeometryFinalLevelPassed([...rows, ...rows.map(row => ({ ...row, correct: false }))], skill)).toBe(true)
+  })
+
+  it('projects distinct geometry concepts and the newest ten unique practice answers across saved history', () => {
+    const line = (timestamp, correct = true) => ({
+      domain: 'geometry', skill: 'geometry_lines', observationId: 'line:' + timestamp, timestamp, correct,
+      values: { geometryConcept: 'line' }
+    })
+    const legacy = { domain: 'geometry', problemId: 'legacy-ray', timestamp: 1, correct: false,
+      values: { geometryTaskId: 'ray-image' } }
+    const recent = { ...line(13, false), trainingContext: { assignmentId: 'geometry-assignment' } }
+    const diagnostic = { ...line(14), evidenceClass: 'diagnostic_only', values: { geometryConcept: 'diagonal' } }
+    const misplaced = { ...line(15), skill: 'geometry_plane', values: { geometryConcept: 'segment' } }
+    const problems = Array.from({ length: 11 }, (_, i) => line(i + 2))
+    const progress = summarizeGeometryProgress({
+      problemLog: [legacy, ...problems],
+      recentProblems: [{ ...legacy, observationId: 'legacy-ray:1' }, recent, ...problems.slice(-3), diagnostic, misplaced]
+    })
+    expect(progress).toEqual([
+      { id: 'geometry_lines', label: 'Linjer och sträckor', tried: 2, total: 4, recentCount: 10, recentCorrect: 9 },
+      { id: 'geometry_plane', label: 'Plana figurer', tried: 0, total: 11, recentCount: 0, recentCorrect: 0 },
+      { id: 'geometry_solids', label: 'Kroppar (3D)', tried: 0, total: 6, recentCount: 0, recentCorrect: 0 }
+    ])
+    expect(summarizeGeometryProgress({ recentProblems: [legacy, { ...legacy, observationId: 'legacy-ray:1' }] })[0])
+      .toMatchObject({ tried: 1, recentCount: 1, recentCorrect: 0 })
   })
 
   it('keeps assignment selection and counts each scoped observation once', () => {

@@ -39,6 +39,8 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   const klass = { classId: `geometry-${tag}`, className: `Geometri ${tag}` }
   const pupil = await createPupil(request, { ...klass, name: `Geometri ${tag}`, operations: ['addition'] })
   await login(page, pupil)
+  await page.getByText('Välj annan träning', { exact: true }).tap()
+  await expect(page.getByRole('region', { name: 'Geometri', exact: true }).getByRole('button')).toHaveCount(3)
   await page.getByRole('button', { name: 'Linjer och sträckor', exact: true }).tap()
   for (let index = 0; index < 4; index += 1) {
     expect((await answer(page, true)).level).toBe(1)
@@ -68,6 +70,12 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   await expect(completed).toBeVisible()
 
   await page.getByRole('button', { name: 'Startsida', exact: true }).tap()
+  await page.getByText('Välj annan träning', { exact: true }).tap()
+  await page.getByRole('button', { name: 'Kroppar (3D)', exact: true }).tap()
+  await expect(page.getByText('Geometri · nivå 1', { exact: true })).toBeVisible()
+  expect((await readState(page)).problem.skill).toBe('geometry_solids')
+  await page.getByRole('button', { name: 'Startsida', exact: true }).tap()
+  await page.getByText('Välj annan träning', { exact: true }).tap()
   await page.getByRole('button', { name: 'Plana figurer', exact: true }).tap()
   await expect(page.getByRole('heading', { name: 'Markera alla månghörningar.' })).toBeVisible()
   const options = page.getByRole('group', { name: 'Svarsalternativ' }).getByRole('button')

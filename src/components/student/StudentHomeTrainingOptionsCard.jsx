@@ -1,10 +1,15 @@
+import { geometryGroups } from '../../domains/geometry/groups.js'
+import { conceptDecks } from '../../lib/conceptPractice.js'
+
 export default function StudentHomeTrainingOptionsCard({
   operationKeys,
   onStartOperationPractice,
   getOperationLabel,
   operationProgress,
   talbildEnabled = false,
-  onStartTalbild
+  onStartTalbild,
+  onStartGeometryPractice,
+  onStartConceptPractice
 }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
@@ -55,6 +60,22 @@ export default function StudentHomeTrainingOptionsCard({
           )
         })}
       </div>
+      {[
+        { id: 'geometry', title: 'Geometri', choices: Object.entries(geometryGroups), onStart: onStartGeometryPractice },
+        { id: 'concept', title: 'Begrepp', choices: Object.values(conceptDecks).map(deck => [deck.id, deck.title]), onStart: onStartConceptPractice }
+      ].map(({ id, title, choices, onStart }) => (
+        <section key={id} className="mt-4 border-t border-gray-200 pt-3" aria-labelledby={id + '-practice-title'}>
+          <h3 id={id + '-practice-title'} className="mb-2 text-sm font-semibold text-gray-800">{title}</h3>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {choices.map(([key, label]) => (
+              <button type="button" key={key} onClick={() => onStart(key)}
+                className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }

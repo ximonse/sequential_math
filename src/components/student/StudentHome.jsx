@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS, ALL_LEVELS as LEVELS } from '../../lib/operations'
-import { conceptDecks } from '../../lib/conceptPractice.js'
-import { geometryGroups } from '../../domains/geometry/groups.js'
 import { normalizeClassOperations } from '../../lib/classOperations'
 import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../lib/masteryCalculation'
 import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
@@ -455,27 +453,6 @@ function StudentHome() {
           </div>
         </section>
 
-        <section className="bg-white border border-gray-200 rounded-xl p-4 mb-4" aria-labelledby="geometry-practice-title">
-          <h2 id="geometry-practice-title" className="text-lg font-semibold text-gray-800 mb-2">Geometri</h2>
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(geometryGroups).map(([skill, label]) => (
-              <button key={skill} type="button" onClick={() => navigate(`/student/${studentId}/practice?mode=${skill}`)}
-                className="rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-900 hover:bg-blue-50">
-                {label}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="mb-4 rounded-xl border border-gray-200 bg-white p-4" aria-labelledby="concept-practice-title">
-          <h2 id="concept-practice-title" className="mb-2 text-lg font-semibold text-gray-800">Begrepp</h2>
-          <div className="flex flex-wrap gap-2">
-            {Object.values(conceptDecks).map(deck => <button key={deck.id} type="button"
-              className="rounded-lg border border-blue-200 px-3 py-1.5 text-sm font-medium text-blue-900 hover:bg-blue-50"
-              onClick={() => navigate(`/student/${studentId}/concepts/${deck.id}`)}>{deck.title}</button>)}
-          </div>
-        </section>
-
         <StudentHomeTableDrillCard
           tables={TABLES}
           selectedTables={selectedTables}
@@ -495,6 +472,8 @@ function StudentHome() {
               operationProgress={operationProgress}
               talbildEnabled={classId !== '' && classConfig.classId === classId && classConfig.talbildEnabled === true}
               onStartTalbild={startTalbild}
+              onStartGeometryPractice={skill => navigate('/student/' + studentId + '/practice?mode=' + skill)}
+              onStartConceptPractice={deckId => navigate('/student/' + studentId + '/concepts/' + deckId)}
             />
           </div>
         </details>

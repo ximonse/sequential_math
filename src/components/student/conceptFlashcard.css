@@ -1,6 +1,7 @@
 .concept-flashcard {
   display: block;
   perspective: 1000px;
+  cursor: pointer;
   margin-inline: auto;
   width: min(100%, 35rem);
   text-align: center;
@@ -9,7 +10,7 @@
 .concept-flashcard__sides {
   display: grid;
   transform-style: preserve-3d;
-  transition: transform 320ms ease-out;
+  transition: transform 500ms ease;
 }
 
 .concept-flashcard[aria-pressed="true"] .concept-flashcard__sides {
@@ -23,7 +24,7 @@
   justify-content: center;
   align-items: center;
   gap: .5rem;
-  min-block-size: 13rem;
+  min-block-size: 16rem;
   padding: 1.25rem;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;

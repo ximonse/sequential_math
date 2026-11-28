@@ -9,10 +9,10 @@ function SessionHeader({
     <div className="flex flex-wrap justify-between items-center gap-3 mb-1 pr-8 sm:mb-8 sm:pr-10">
       <div className="min-w-0">
         <p className="text-sm text-gray-500">{profileName}</p>
-        <p className="text-xs text-gray-400">
+        {sessionCount != null && <p className="text-xs text-gray-400">
           {sessionCount} denna session
           {remainingCount !== null ? ` · ${remainingCount} kvar` : ''}
-        </p>
+        </p>}
       </div>
 
       {streak >= 3 && (

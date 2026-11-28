@@ -17,6 +17,16 @@ test('record unique card flips and report exercise responses in the teacher assi
     })
     window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text } }
   })
+  let releaseSync
+  let heldOpens = 0
+  const holdSync = new Promise(resolve => { releaseSync = resolve })
+  await page.route('**/api/me/events', async route => {
+    if (route.request().postDataJSON()?.entries?.some(entry => entry.type === 'concept_activity' && entry.payload.kind === 'open_cards')) {
+      heldOpens++
+      await holdSync
+    }
+    await route.continue()
+  })
   try {
     const teacherPage = await teacherContext.newPage()
     await teacherLogin(teacherPage, teacher)
@@ -32,23 +42,32 @@ test('record unique card flips and report exercise responses in the teacher assi
     await page.goto(`${link.pathname}${link.search}`)
     await expect(page.getByRole('heading', { name: 'Räknesättens språk', exact: true })).toBeVisible()
     await expect(page.getByLabel('Läs upp automatiskt')).toBeChecked()
-    await page.getByRole('button', { name: 'Begreppskort', exact: true }).tap()
     await expect(page.getByText('Kort 1 av 12 · 0 vända')).toBeVisible()
+    await expect(page.getByText('Tryck för att vända', { exact: true })).toBeVisible()
+    await expect(page.getByText(/Här övar du på begreppen/)).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('concept-front.png') })
+    await expect.poll(() => heldOpens).toBeGreaterThan(0)
     await expect.poll(() => page.evaluate(() => window.__conceptSpeech.at(-1))).toEqual({ text: 'Addition', lang: 'sv-SE' })
     await page.getByRole('button', { name: 'Vänd kortet' }).tap()
     await expect(page.getByText('Kort 1 av 12 · 1 vända')).toBeVisible()
     const flip = page.getByRole('button', { name: 'Vänd kortet' })
     await expect(flip).toHaveAttribute('aria-pressed', 'true')
+    await expect(flip.locator('.concept-flashcard__sides')).toHaveCSS('transition-duration', '0.5s')
     await expect(flip.locator('.concept-flashcard__sides')).toHaveCSS('transform', 'matrix3d(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1)')
     await expect.poll(() => page.evaluate(() => window.__conceptSpeech.at(-1))).toEqual({ text: 'Räknesättet där tal läggs ihop.', lang: 'sv-SE' })
     await page.screenshot({ path: testInfo.outputPath('concept-cards.png') })
-    await flip.tap()
+    await page.getByRole('button', { name: 'Nästa kort', exact: true }).tap()
+    await expect(page.getByText('Kort 2 av 12 · 1 vända')).toBeVisible()
     await expect(flip).toHaveAttribute('aria-pressed', 'false')
+    await page.getByRole('button', { name: 'Föregående', exact: true }).tap()
+    await expect(page.getByText('Kort 1 av 12 · 1 vända')).toBeVisible()
+    releaseSync()
+    await expect.poll(async () => (await readServerProfile(request, pupil.studentId))?.conceptPractice?.[0]?.cards?.addition).toEqual(expect.any(Number))
     await page.getByLabel('Läs upp automatiskt').uncheck()
     await page.reload()
     await expect(page.getByLabel('Läs upp automatiskt')).not.toBeChecked()
-    await page.getByRole('button', { name: 'Begreppskort', exact: true }).tap()
-    await page.getByRole('button', { name: 'Vänd kortet' }).tap()
+    await expect(page.getByRole('button', { name: 'Vänd kortet' })).toHaveAttribute('aria-pressed', 'false')
+    await page.getByRole('button', { name: 'Vänd kortet' }).press('Enter')
     await expect(page.getByText('Kort 1 av 12 · 1 vända')).toBeVisible()
     expect(await page.evaluate(() => window.__conceptSpeech)).toEqual([])
     await page.getByRole('button', { name: 'Lyssna' }).tap()
@@ -102,14 +121,21 @@ test('record unique card flips and report exercise responses in the teacher assi
     const activityId = saved.conceptPractice[0].assignmentId
     await expect.poll(async () => Boolean((await serverProfile())?.assignmentProgress?.[`assignment:${activityId}`]?.completedAt)).toBe(true)
 
-    await page.getByRole('link', { name: /Till startsidan/ }).tap()
+    await page.getByRole('button', { name: 'Startsida', exact: true }).tap()
+    await page.getByText('Välj annan träning', { exact: true }).tap()
     await page.getByRole('region', { name: 'Begrepp', exact: true }).getByRole('button', { name: 'Linje, stråle, sträcka och diagonal', exact: true }).tap()
     await page.getByRole('button', { name: 'Begreppskort', exact: true }).tap()
     await page.getByRole('button', { name: 'Vänd kortet' }).tap()
     await expect(page.getByRole('button', { name: 'Vänd kortet' })).toHaveAttribute('aria-pressed', 'true')
     await page.getByRole('button', { name: 'Öva begreppen', exact: true }).tap()
     await expect(page.getByRole('group', { name: 'Svarsalternativ' }).getByRole('button').first()).toBeVisible()
+    await page.getByRole('button', { name: 'Begreppskort', exact: true }).tap()
+    await expect(page.getByRole('button', { name: 'Vänd kortet' })).toHaveAttribute('aria-pressed', 'false')
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(page.getByText('Tryck för att vända', { exact: true })).toBeVisible()
+    await page.screenshot({ path: testInfo.outputPath('concept-front-phone.png') })
   } finally {
+    releaseSync()
     await teacherContext.close()
   }
 })

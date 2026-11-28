@@ -14,6 +14,7 @@
 - [Preview](https://sekvens-git-codex-gamma-concept-practice-ximonses-projects.vercel.app) 2026-11-28: Commit c1f2cf3 har status READY i sekvens Preview dpl_CzfdVY4Q9yx9QCDwC6aJseX5ELJ3. Den stående grenadressen pekar på bygget. Elevflödet är verifierat lokalt.
 - 2026-11-28: Begreppskort öppnar på första framsidan. Vändningen startar vid tryck och tar en halv sekund som i Quiz-appen. Eleven får en kort övningsinstruktion och texten Tryck för att vända. Vyn följer träningsramen. Geometri med tre delområden och Begrepp med två områden ligger under Välj annan träning. Två klickprov och 1 451 tester gröna. Första kortet, vändning under pausad serversynk, omladdning, lärarstatistik och geometriurval verifierade lokalt.
 - 2026-11-28: Begrepp och Geometri delar uppläsningslägena På begäran, Automatiskt och Avstängt. På begäran är förvalt i fri träning och i nya uppdrag. Långtryck läser kortsidan, frågan eller ett enskilt alternativ utan att vända kortet eller välja ett svar. Automatik kan stängas av på elevenheten. Äldre uppdrag med förvald uppläsning behåller automatiken. Pekflödet provat lokalt med simulerad uppläsning.
+- [Preview](https://sekvens-git-codex-gamma-concept-practice-ximonses-projects.vercel.app) 2026-11-28: Commit f7143e1 med uppdaterade begreppskort, träningsmeny och tre ljudlägen är READY i sekvens Preview dpl_5DvuTM8oYJPUCdXKEXhBWTxGtSvr. Stående grenadress verifierad. Ett Git-triggat bygge. Elevflödet och ljudanropen är verifierade lokalt med simulerad uppläsning.
 
 ## 2026-11-26: Geometrins första träningsversion
 

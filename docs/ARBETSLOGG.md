@@ -8,6 +8,7 @@
 - Lokalt verifierat med begrepps- och geometrirobotarna. Kortet räknades en gång efter omladdning, sorteringssvar och slutfört uppdrag sparades, och lärarvyn visade senaste omgången samt det konkreta felsvaret. Elev- och lärarvyerna granskades visuellt. Produktionsverifiering återstår.
 - Preview beställd och verifierad. PR [#53](https://github.com/ximonse/sequential_math/pull/53) är öppen. [Preview](https://sekvens-ot14jchie-ximonses-projects.vercel.app) i sekvens är READY för commit `088f090`. Produktionsdomänen pekar fortfarande på `9d792ca`. Inloggad provning återstår.
 - Simon fick nekad elevinloggning i Preview trots nytt elevkort. Lokalt visade ett prov att Preview nekade sitt eget domännamn om APP_ORIGIN saknades. Rättningen prövades med syntetiskt kodnamn och PIN. En annan origin nekas fortfarande. Preview-loggen registrerar nu endast var ett nekat försök stannade. Orsaken till Simons försök är fortfarande obekräftad.
+- Inloggningsrättningen är READY för commit `5e3cfe5` på [samma Preview-adress](https://sekvens-git-codex-gamma-concept-practice-ximonses-projects.vercel.app). 1 448 tester, bygge och två lokala klickprov gröna. Produktionen är verifierad på `9d792ca`. Elevinloggning i Preview återstår att bekräfta.
 
 ## 2026-11-26: Geometrins första träningsversion
 

@@ -1,0 +1,36 @@
+.concept-flashcard {
+  display: block;
+  perspective: 1000px;
+  margin-inline: auto;
+  width: min(100%, 35rem);
+  text-align: center;
+}
+
+.concept-flashcard__sides {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 320ms ease-out;
+}
+
+.concept-flashcard[aria-pressed="true"] .concept-flashcard__sides {
+  transform: rotateY(180deg);
+}
+
+.concept-flashcard__side {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+  min-block-size: 13rem;
+  padding: 1.25rem;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.concept-flashcard__side--back { transform: rotateY(180deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .concept-flashcard__sides { transition: none; }
+}

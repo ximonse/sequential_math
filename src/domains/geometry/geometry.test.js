@@ -5,7 +5,7 @@ import { decodeAssignmentPayload, encodeAssignmentPayload } from '../../lib/assi
 import { normalizeImageQuestion } from '../arithmetic/screeningImageQuestions.js'
 import geometryDomain from './index.js'
 import { encodeGeometrySelection, geometryQuestions } from './questions.js'
-import { countGeometryAssignmentAnswers, getGeometryLevel } from './progress.js'
+import { countGeometryAssignmentAnswers, getGeometryLevel, isGeometryFinalLevelPassed } from './progress.js'
 import { summarizeGeometry } from './statistics.js'
 
 describe('geometry practice', () => {
@@ -54,6 +54,24 @@ describe('geometry practice', () => {
     expect(getGeometryLevel(profile.problemLog.map(row => ({ ...row, timeSpent: 25 })), skill)).toBe(1)
     expect(getGeometryLevel(profile.problemLog.map(row => ({ ...row, interruptionSuspected: true })), skill)).toBe(1)
     expect(selectNextProblemForProfile(profile, { allowedTypes: [skill] }).choiceTask.responseMode).toBe('name')
+  })
+
+  it.each([
+    ['geometry_lines', 4],
+    ['geometry_plane', 6],
+    ['geometry_solids', 6]
+  ])('recognizes final-level completion for %s from distinct level 2 responses', (skill, needed) => {
+    const finalTasks = geometryQuestions[skill].filter(task => task.minimumLevel === 2).slice(0, needed)
+    const rows = finalTasks.map((task, index) => ({
+      domain: 'geometry', skill, level: 2, correct: index > 0, timeSpent: 12,
+      values: { geometryTaskId: task.taskId }
+    }))
+    expect(isGeometryFinalLevelPassed(rows.slice(0, -1), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows.map(row => ({ ...row, level: 1 })), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows.map(row => ({ ...row, interruptionSuspected: true })), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows.map(row => ({ ...row, timeSpent: 13 })), skill)).toBe(false)
+    expect(isGeometryFinalLevelPassed(rows, skill)).toBe(true)
+    expect(isGeometryFinalLevelPassed([...rows, ...rows.map(row => ({ ...row, correct: false }))], skill)).toBe(true)
   })
 
   it('keeps assignment selection and counts each scoped observation once', () => {

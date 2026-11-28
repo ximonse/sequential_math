@@ -1,12 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { decodeAssignmentPayload } from '../../lib/assignments.js'
 import { getConceptDeck, latestConceptRun, recordConceptActivity } from '../../lib/conceptPractice.js'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime.js'
 import ScreeningImageQuestion, { ScreeningImage } from './ScreeningImageQuestion.jsx'
+import { QuestionCard } from './practice/PracticeLayout.jsx'
 import StudentSyncStatus from './session/StudentSyncStatus.jsx'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus.js'
 import { choiceFeedback, useAnswerReveal } from './session/useAnswerReveal.js'
+import { PRACTICE_AUTO_CONTINUE_DELAY_MS } from './session/usePracticeUiEffects.js'
+import { useConceptSpeech } from './session/useConceptSpeech.js'
+import './conceptFlashcard.css'
 
 const action = 'rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 disabled:opacity-50'
 const buttonFrame = 'rounded-lg px-3 py-1.5 font-medium'
@@ -36,7 +40,7 @@ function SortingExercise({ exercise, titles, answer, disabled, result, reveal, c
     </button>
   }
   return <>
-    <p className="mb-2 text-sm text-gray-600">Välj ett kort och sedan ett fält. Du kan också dra kortet.</p>
+    <p className="mb-2 mt-3 text-base text-gray-600">Välj ett kort och sedan ett fält. Du kan också dra kortet.</p>
     <div aria-label="Kort att placera" className="mb-3 flex min-h-10 flex-wrap gap-2">
       {exercise.objects.filter(object => !answer[object.id]).map(card)}
     </div>
@@ -55,11 +59,16 @@ function SortingExercise({ exercise, titles, answer, disabled, result, reveal, c
 function Exercise({ exercise, deck, busy, result, save, next }) {
   const [answer, setAnswer] = useState(exercise.task ? [] : {})
   const reveal = useAnswerReveal(result)
+  useEffect(() => {
+    if (!result?.correct) return undefined
+    const timer = setTimeout(next, PRACTICE_AUTO_CONTINUE_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [result, next])
   const titles = Object.fromEntries(deck.cards.map(card => [card.id, card.title]))
   const canSubmit = exercise.task ? answer.length > 0 : Object.keys(answer).length === exercise.objects.length
   const choices = exercise.task?.options.filter(option => exercise.task.correctOptionIds.includes(option.id))
   return <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-    <h2 className="mb-3 text-lg font-semibold">{exercise.prompt}</h2>
+    <QuestionCard align="left" size="text"><h2>{exercise.prompt}</h2></QuestionCard>
     {exercise.task ? <ScreeningImageQuestion task={exercise.task} selected={answer} disabled={busy || Boolean(result)} onChange={setAnswer}
       getFeedback={result ? id => choiceFeedback(id, answer, exercise.task.correctOptionIds, reveal) : undefined} />
       : <SortingExercise exercise={exercise} titles={titles} answer={answer} disabled={busy || Boolean(result)} result={result} reveal={reveal} change={setAnswer} />}
@@ -72,8 +81,10 @@ function Exercise({ exercise, deck, busy, result, save, next }) {
       </> : <ul className="space-y-1">{exercise.objects.filter(x => answer[x.id] !== x.field).map(object =>
         <li key={object.id}>{object.text} hör till <strong>{titles[object.field]}</strong>.</li>)}</ul>}
     </div>}
-    <button type="button" className={`${action} answer-submit-button mt-3`} disabled={busy || (result ? !reveal : !canSubmit)}
-      onClick={result ? next : () => save(answer)}>{result ? 'Fortsätt' : 'Svara'}</button>
+    <div className="mt-3 flex justify-end">
+      <button type="button" className={`${action} answer-submit-button`} disabled={busy || (result ? !reveal : !canSubmit)}
+        onClick={result ? next : () => save(answer)}>{result ? 'Fortsätt' : 'Svara'}</button>
+    </div>
   </section>
 }
 
@@ -93,6 +104,7 @@ export default function ConceptPractice() {
   const [cardIndex, setCardIndex] = useState(0)
   const [turned, setTurned] = useState(false)
   const [shownExercise, setShownExercise] = useState(null)
+  const advanceExercise = useCallback(() => setShownExercise(null), [])
 
   useEffect(() => {
     let live = true
@@ -132,16 +144,24 @@ export default function ConceptPractice() {
     }
   }
 
-  if (!deck || (params.has('assignment') && !assignmentId)) return <p className="p-4">Begreppsövningen kunde inte öppnas.</p>
-  const item = deck.cards[cardIndex]
-  const nextExercise = deck.exercises.find(exercise => !Object.hasOwn(run?.answers || {}, exercise.id))
+  const item = deck?.cards[cardIndex]
+  const nextExercise = deck?.exercises.find(exercise => !Object.hasOwn(run?.answers || {}, exercise.id))
   const exercise = shownExercise || nextExercise
+  const spokenText = section === 'cards' ? (turned ? item?.explanation : item?.title)
+    : section === 'exercises' ? exercise?.prompt : ''
+  const speech = useConceptSpeech({ studentId, defaultEnabled: Boolean(assignmentId && assignment.conceptSpeechByDefault),
+    cue: section === 'cards' ? item?.id : exercise?.id, text: spokenText })
+  if (!deck || (params.has('assignment') && !assignmentId)) return <p className="p-4">Begreppsövningen kunde inte öppnas.</p>
   const completed = Boolean(run && !nextExercise)
   const openCards = () => { setSection('cards'); setCardIndex(0); setTurned(false) }
   const openExercises = () => { setSection('exercises'); setShownExercise(null) }
   const startCards = () => run?.cardsOpenedAt ? openCards() : save('open_cards', {}, openCards)
   const startExercises = () => run ? openExercises() : save('open', {}, openExercises)
   const stepCard = amount => { setCardIndex(cardIndex + amount); setTurned(false) }
+  const flipCard = () => {
+    if (Object.hasOwn(run?.cards || {}, item.id)) setTurned(value => !value)
+    else void save('flip', { cardId: item.id }, () => setTurned(true))
+  }
 
   return <main className="mx-auto max-w-3xl space-y-3 px-4 pb-6 text-gray-900">
     <Link className="inline-block text-sm font-semibold text-blue-800" to={`/student/${studentId}`}>← Till startsidan</Link>
@@ -155,21 +175,36 @@ export default function ConceptPractice() {
         <button type="button" className={section === 'exercises' ? action : secondary} aria-pressed={section === 'exercises'} disabled={busy}
           onClick={startExercises}>Öva begreppen</button>
       </div>
+      {speech.supported && <div className="flex flex-wrap items-center justify-end gap-3 text-sm">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={speech.enabled} onChange={event => speech.setEnabled(event.target.checked)} />
+          Läs upp automatiskt
+        </label>
+        {spokenText && <button type="button" className={secondary} onClick={speech.speak}>Lyssna</button>}
+      </div>}
       {section === 'cards' && <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <p className="mb-2 text-sm text-gray-600">Kort {cardIndex + 1} av {deck.cards.length} · {Object.keys(run?.cards || {}).length} vända</p>
-        <h2 className="text-xl font-semibold">{item.title}</h2>
-        {turned ? <div className="mt-2 space-y-2" aria-live="polite">
-          <p>{item.explanation}</p>
-          {item.image && <div className="w-28"><ScreeningImage image={item.image} /></div>}
-        </div> : <button type="button" className={`${action} mt-2`} disabled={busy}
-          onClick={() => Object.hasOwn(run?.cards || {}, item.id) ? setTurned(true) : save('flip', { cardId: item.id }, () => setTurned(true))}>Vänd kortet</button>}
-        <div className="mt-3 flex flex-wrap gap-2">
+        <p className="sr-only" role="status">{spokenText}</p>
+        <button type="button" className="concept-flashcard rounded-2xl focus-visible:outline-2 focus-visible:outline-blue-700"
+          aria-label="Vänd kortet" aria-pressed={turned} disabled={busy} onClick={flipCard}>
+          <span className="concept-flashcard__sides">
+            <span aria-hidden={turned} className="concept-flashcard__side rounded-2xl border-2 border-blue-100 bg-blue-50 shadow-sm">
+              <span className="text-2xl font-bold">{item.title}</span>
+              <span className="text-sm text-gray-600">Vänd kortet</span>
+            </span>
+            <span aria-hidden={!turned} className="concept-flashcard__side concept-flashcard__side--back rounded-2xl border-2 border-blue-100 bg-white shadow-sm">
+              <span className="text-lg font-semibold">{item.explanation}</span>
+              {item.image && <span className="w-28"><ScreeningImage image={item.image} /></span>}
+            </span>
+          </span>
+        </button>
+        <div className="mt-3 flex flex-wrap justify-between gap-2">
           <button type="button" className={secondary} disabled={busy || cardIndex === 0} onClick={() => stepCard(-1)}>Föregående</button>
           <button type="button" className={secondary} disabled={busy || cardIndex === deck.cards.length - 1} onClick={() => stepCard(1)}>Nästa kort</button>
         </div>
       </section>}
       {section === 'exercises' && (exercise ? <Exercise key={exercise.id} exercise={exercise} deck={deck}
-        busy={busy} result={run?.answers[exercise.id]} next={() => setShownExercise(null)}
+        busy={busy} result={run?.answers[exercise.id]} next={advanceExercise}
         save={answer => save('answer', { exerciseId: exercise.id, answer }, () => setShownExercise(exercise))} />
         : completed && <section className="rounded-xl border border-green-200 bg-white p-4 shadow-sm">
           <h2 className="mb-2 text-lg font-semibold">Övningen är klar</h2>

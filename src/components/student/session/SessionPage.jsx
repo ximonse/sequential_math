@@ -22,6 +22,7 @@ function SessionPage({
   onContinueAdaptively,
   sessionError,
   currentProblem,
+  geometryCompleted = false,
   feedback,
   answer,
   onInputChange,
@@ -94,6 +95,7 @@ function SessionPage({
 
           <ProblemView
             problem={currentProblem}
+            geometryCompleted={geometryCompleted}
             feedback={feedback}
             inputValue={answer}
             onInputChange={onInputChange}

@@ -15,7 +15,9 @@ async function answer(page, correct) {
   for (const id of ids) await choices.nth(task.options.findIndex(option => option.id === id)).tap()
   await expect(submit).toBeEnabled()
   expect((await readState(page)).phase).toBe('answering')
-  await expect(submit).toHaveCSS('min-height', '50px')
+  await expect(submit).toHaveCSS('min-height', '56px')
+  await expect(submit).toHaveCSS('font-size', '20px')
+  expect(await submit.evaluate(button => Math.abs(button.getBoundingClientRect().right - button.parentElement.getBoundingClientRect().right) < 1)).toBe(true)
   await submit.tap()
   if (!correct) {
     const wrongOption = choices.nth(task.options.findIndex(option => option.id === ids[0]))
@@ -45,6 +47,25 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   await expect(page.getByText('Geometri · nivå 2', { exact: true })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Svarsalternativ' })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('geometry-pupil.png') })
+  const completed = page.getByText('Nivå 2 klarad!', { exact: false })
+  await expect(completed).toHaveCount(0)
+  for (let index = 0; index < 4; index += 1) {
+    expect((await answer(page, true)).level).toBe(2)
+    if (index < 3) {
+      await expect(completed).toHaveCount(0)
+      await nextQuestion(page)
+    }
+  }
+  await expect(completed).toBeVisible()
+  await expect(page.locator('h3')).toHaveCSS('font-size', '20px')
+  await page.screenshot({ path: testInfo.outputPath('geometry-level-completed.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.locator('h3')).toHaveCSS('font-size', '18px')
+  await expect(completed).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('geometry-level-completed-phone.png') })
+  await page.setViewportSize({ width: 1024, height: 768 })
+  await page.reload()
+  await expect(completed).toBeVisible()
 
   await page.getByRole('button', { name: 'Startsida', exact: true }).tap()
   await page.getByRole('button', { name: 'Plana figurer', exact: true }).tap()

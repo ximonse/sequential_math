@@ -139,7 +139,10 @@ export function encodeAssignmentPayload(assignment) {
 
   if (normalized.kind === 'table') payload.tables = normalized.tables
   if (normalized.kind === 'focus') payload.focusMode = normalized.focusMode
-  if (normalized.kind === 'concept') payload.conceptDeckId = normalized.conceptDeckId
+  if (normalized.kind === 'concept') {
+    payload.conceptDeckId = normalized.conceptDeckId
+    if (normalized.conceptSpeechByDefault) payload.conceptSpeechByDefault = true
+  }
 
   return toBase64Url(JSON.stringify(payload))
 }
@@ -197,6 +200,7 @@ function normalizeAssignmentCore(input, options = {}) {
     const deck = getConceptDeck(input.conceptDeckId)
     if (!deck) return null
     return { id, kind, title: `Begrepp · ${deck.title}`, targetCount: deck.exercises.length, conceptDeckId: deck.id,
+      conceptSpeechByDefault: input.conceptSpeechByDefault === true,
       createdAt, problemTypes: [], minLevel: 1, maxLevel: 1, ncmCodes: [], ncmAbilityTags: [] }
   }
 

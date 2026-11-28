@@ -86,6 +86,7 @@ export default function AssignmentsPanel({
   const [breakGames, setBreakGames] = useState(false)
   const [workspaces, setWorkspaces] = useState({ notebook: false, drawing: true })
   const [geometrySelection, setGeometrySelection] = useState([])
+  const [conceptSpeechByDefault, setConceptSpeechByDefault] = useState(false)
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -162,10 +163,14 @@ export default function AssignmentsPanel({
       </AssignmentModuleBox>
 
       <AssignmentModuleBox title="Begrepp">
+        <label className="mb-2 flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={conceptSpeechByDefault} onChange={event => setConceptSpeechByDefault(event.target.checked)} />
+          Automatisk uppläsning som standard
+        </label>
         <div className="flex flex-wrap gap-2">
           {Object.values(conceptDecks).map(deck => <button key={deck.id} type="button"
             className={`${BUTTON_BASE} ${TONES.custom}`}
-            onClick={() => onCreateMathPractice(createAssignment({ kind: 'concept', conceptDeckId: deck.id }))}>{deck.title}</button>)}
+            onClick={() => onCreateMathPractice(createAssignment({ kind: 'concept', conceptDeckId: deck.id, conceptSpeechByDefault }))}>{deck.title}</button>)}
         </div>
       </AssignmentModuleBox>
 

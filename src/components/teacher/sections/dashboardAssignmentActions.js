@@ -78,11 +78,11 @@ export function buildDashboardAssignmentActions({
     if (targets.length) void saveTargets(targets, { action: 'deactivate', assignmentId })
   }
 
-  const handleCreatePreset = (presetKey, targetCount, breakGames = false, workspaces) => {
+  const handleCreatePreset = (presetKey, targetCount, breakGames = false, workspaces, speechMode) => {
     const base = getPresetConfig(presetKey)
     if (!base) return
     const cap = Math.floor(Number(targetCount))
-    const preset = { ...base, breakGames, ...(workspaces ? { workspaces } : {}), ...(Number.isFinite(cap) && cap > 0 ? { targetCount: cap } : {}) }
+    const preset = { ...base, breakGames, speechMode, ...(workspaces ? { workspaces } : {}), ...(Number.isFinite(cap) && cap > 0 ? { targetCount: cap } : {}) }
     const created = createAssignment(preset)
     if (!created) {
       setDashboardStatus('Kunde inte skapa uppdrag just nu.')

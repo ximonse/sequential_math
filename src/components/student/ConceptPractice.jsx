@@ -11,14 +11,15 @@ import StudentSyncStatus from './session/StudentSyncStatus.jsx'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus.js'
 import { choiceFeedback, useAnswerReveal } from './session/useAnswerReveal.js'
 import { PRACTICE_AUTO_CONTINUE_DELAY_MS } from './session/usePracticeUiEffects.js'
-import { useConceptSpeech } from './session/useConceptSpeech.js'
+import { usePracticeSpeech } from './session/usePracticeSpeech.js'
+import PracticeSpeechControls from './session/PracticeSpeechControls.jsx'
 import './conceptFlashcard.css'
 
 const action = 'rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 disabled:opacity-50'
 const buttonFrame = 'rounded-lg px-3 py-1.5 font-medium'
 const secondary = `${buttonFrame} border border-gray-300 text-gray-800 hover:bg-gray-50`
 
-function SortingExercise({ exercise, titles, answer, disabled, result, reveal, change }) {
+function SortingExercise({ exercise, titles, answer, disabled, result, reveal, change, readable }) {
   const [active, setActive] = useState(null)
   const place = (object, field) => {
     if (!disabled && exercise.objects.some(item => item.id === object)) {
@@ -28,11 +29,13 @@ function SortingExercise({ exercise, titles, answer, disabled, result, reveal, c
   }
   const card = object => {
     const correct = reveal || answer[object.id] === object.field
+    const label = object.text.replace(/\[([^\]]+)\]/g, '$1 (markerat)')
     const appearance = result ? buttonFrame : `${secondary} bg-white`
     return <button key={object.id} type="button" draggable={!disabled} disabled={disabled}
+      {...readable(label)}
       data-answer-feedback={result ? (correct ? 'correct' : 'incorrect') : undefined}
       aria-description={result ? (correct ? 'Rätt placering' : 'Fel placering') : undefined}
-      aria-label={object.text.replace(/\[([^\]]+)\]/g, '$1 (markerat)')} aria-pressed={active === object.id}
+      aria-label={label} aria-pressed={active === object.id}
       onDragStart={event => event.dataTransfer.setData('text/plain', object.id)}
       onClick={() => setActive(object.id)}
       className={`${appearance} concept-sort-card ${active === object.id ? 'ring-2 ring-blue-700' : ''}`}>
@@ -50,7 +53,7 @@ function SortingExercise({ exercise, titles, answer, disabled, result, reveal, c
       {exercise.fields.map(field => <div key={field} role="group" aria-label={titles[field]} className="rounded-lg border border-blue-200 bg-blue-50 p-2"
         onDragOver={event => { if (!disabled) event.preventDefault() }}
         onDrop={event => { event.preventDefault(); place(event.dataTransfer.getData('text/plain'), field) }}>
-        <button type="button" disabled={disabled || !active} className="mb-1 w-full text-left font-semibold text-blue-950"
+        <button type="button" aria-disabled={disabled || !active} {...readable(titles[field])} className="mb-1 w-full text-left font-semibold text-blue-950"
           onClick={() => place(active, field)}>{titles[field]}</button>
         <div className="flex min-h-8 flex-wrap gap-1">{exercise.objects.filter(object => (reveal && result ? object.field : answer[object.id]) === field).map(card)}</div>
       </div>)}
@@ -58,7 +61,7 @@ function SortingExercise({ exercise, titles, answer, disabled, result, reveal, c
   </>
 }
 
-function Exercise({ exercise, deck, busy, result, save, next }) {
+function Exercise({ exercise, deck, busy, result, save, next, readable }) {
   const [answer, setAnswer] = useState(exercise.task ? [] : {})
   const reveal = useAnswerReveal(result)
   useEffect(() => {
@@ -70,10 +73,10 @@ function Exercise({ exercise, deck, busy, result, save, next }) {
   const canSubmit = exercise.task ? answer.length > 0 : Object.keys(answer).length === exercise.objects.length
   const choices = exercise.task?.options.filter(option => exercise.task.correctOptionIds.includes(option.id))
   return <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-    <QuestionCard align="left" size="text"><h2>{exercise.prompt}</h2></QuestionCard>
-    {exercise.task ? <ScreeningImageQuestion task={exercise.task} selected={answer} disabled={busy || Boolean(result)} onChange={setAnswer}
+    <QuestionCard align="left" size="text"><h2 {...readable(exercise.prompt, true)}>{exercise.prompt}</h2></QuestionCard>
+    {exercise.task ? <ScreeningImageQuestion task={exercise.task} selected={answer} disabled={busy || Boolean(result)} onChange={setAnswer} readable={readable}
       getFeedback={result ? id => choiceFeedback(id, answer, exercise.task.correctOptionIds, reveal) : undefined} />
-      : <SortingExercise exercise={exercise} titles={titles} answer={answer} disabled={busy || Boolean(result)} result={result} reveal={reveal} change={setAnswer} />}
+      : <SortingExercise exercise={exercise} titles={titles} answer={answer} disabled={busy || Boolean(result)} result={result} reveal={reveal} change={setAnswer} readable={readable} />}
     {reveal && <div role="status" className="mt-3 rounded-lg bg-gray-100 px-3 py-2">
       {result.correct ? 'Rätt!' : exercise.task ? <>
         <p>Rätt svar</p>
@@ -108,7 +111,7 @@ export default function ConceptPractice() {
   const [cardIndex, setCardIndex] = useState(0)
   const [turned, setTurned] = useState(false)
   const [shownExercise, setShownExercise] = useState(null)
-  const advanceExercise = useCallback(() => setShownExercise(null), [])
+  const advanceExercise = useCallback(() => setShownExercise(null), [setShownExercise])
 
   const validEntry = Boolean(deck && (!params.has('assignment') || assignmentId))
   const save = useCallback((kind, detail = {}, { fresh = false, onSaved } = {}) => {
@@ -172,7 +175,7 @@ export default function ConceptPractice() {
   const exercise = shownExercise || nextExercise
   const spokenText = section === 'cards' ? (turned ? item?.explanation : item?.title)
     : section === 'exercises' ? exercise?.prompt : ''
-  const speech = useConceptSpeech({ studentId, defaultEnabled: Boolean(assignmentId && assignment.conceptSpeechByDefault),
+  const speech = usePracticeSpeech({ studentId, mode: assignmentId ? assignment.speechMode : undefined,
     cue: section === 'cards' ? item?.id : exercise?.id, text: profile ? spokenText : '' })
   if (!validEntry) return <p className="p-4">Begreppsövningen kunde inte öppnas.</p>
   const completed = Boolean(run && !nextExercise)
@@ -197,7 +200,7 @@ export default function ConceptPractice() {
   }
 
   return <div className="min-h-[100dvh] overflow-x-hidden student-role-surface py-1 sm:py-8">
-    <main className="mx-auto max-w-5xl px-3 sm:px-4">
+    <main className="mx-auto max-w-5xl px-3 sm:px-4" {...speech.gestureProps}>
       <SessionHeader profileName="Begrepp" onExit={() => navigate('/student/' + studentId)} />
       <FloatingNotices>
         <StudentSyncStatus status={status} />
@@ -211,19 +214,13 @@ export default function ConceptPractice() {
           <button type="button" className={section === 'exercises' ? action : secondary} aria-pressed={section === 'exercises'} disabled={!profile || busy}
             onClick={openExercises}>Öva begreppen</button>
         </div>
-        {profile && speech.supported && <div className="flex flex-wrap items-center justify-end gap-3 text-sm">
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={speech.enabled} onChange={event => speech.setEnabled(event.target.checked)} />
-            Läs upp automatiskt
-          </label>
-          {spokenText && <button type="button" className={secondary} onClick={speech.speak}>Lyssna</button>}
-        </div>}
+        {profile && <PracticeSpeechControls speech={speech} />}
         {section === 'cards' && <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="mb-3 max-w-prose text-sm text-gray-700">Här övar du på begreppen. Tänk efter ordentligt först. Om du fastnar eller vill kolla om du tänkte rätt, tryck på kortet och läs baksidan. Gå sedan vidare när du är redo.</p>
           <p className="mb-2 text-sm text-gray-600">Kort {cardIndex + 1} av {deck.cards.length} · {Object.keys(run?.cards || {}).length} vända</p>
           <p className="sr-only" role="status">{spokenText}</p>
           <button type="button" className="concept-flashcard rounded-2xl focus-visible:outline-2 focus-visible:outline-blue-700"
-            aria-label="Vänd kortet" aria-pressed={turned} disabled={!profile} onClick={flipCard}>
+            {...speech.readable(spokenText)} aria-label="Vänd kortet" aria-pressed={turned} disabled={!profile} onClick={flipCard}>
             <span key={item.id} className="concept-flashcard__sides rounded-xl border-2 border-blue-100 bg-blue-50 shadow-sm">
               <span aria-hidden={turned} className="concept-flashcard__side">
                 <span className="text-2xl font-bold">{item.title}</span>
@@ -242,7 +239,7 @@ export default function ConceptPractice() {
         </section>}
         {section === 'exercises' && (exercise ? <Exercise key={exercise.id} exercise={exercise} deck={deck}
           busy={busy} result={run?.answers[exercise.id]} next={advanceExercise}
-          save={saveExercise} />
+          save={saveExercise} readable={speech.readable} />
           : completed && <section className="rounded-xl border border-green-200 bg-white p-4 shadow-sm">
             <h2 className="mb-2 text-lg font-semibold">Övningen är klar</h2>
             <p className="mb-3">{Object.values(run.answers).filter(answer => answer.correct).length} av {deck.exercises.length} uppgifter rätt på första försöket.</p>

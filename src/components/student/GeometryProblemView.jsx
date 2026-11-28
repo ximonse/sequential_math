@@ -1,18 +1,24 @@
+import { usePracticeSpeech } from './session/usePracticeSpeech.js'
+import PracticeSpeechControls from './session/PracticeSpeechControls.jsx'
 import ScreeningImageQuestion from './ScreeningImageQuestion.jsx'
 import { QuestionCard } from './practice/PracticeLayout.jsx'
 import { choiceFeedback, useAnswerReveal } from './session/useAnswerReveal.js'
 import { decodeGeometrySelection, encodeGeometrySelection } from '../../domains/geometry/questions.js'
 
-export default function GeometryProblemView({ problem, geometryCompleted, feedback, inputValue, onInputChange, onSubmit, onNext }) {
+export default function GeometryProblemView({ problem, geometryCompleted, feedback, inputValue, onInputChange, onSubmit, onNext, studentId, speechMode }) {
   const reveal = useAnswerReveal(feedback)
   const task = problem.choiceTask
+  const speech = usePracticeSpeech({ studentId, mode: speechMode, cue: problem.id, text: task.promptSv })
   const selected = decodeGeometrySelection(inputValue)
   const correctLabels = task.options.flatMap((option, index) => task.correctOptionIds.includes(option.id)
     ? [option.labelSv || `Bild ${index + 1}`] : [])
-  return <section className="rounded-xl border border-gray-200 bg-white p-3 text-gray-800 shadow-sm sm:p-4 [&_.screening-image-question]:text-inherit">
-    <p className="mb-1 text-sm font-medium text-gray-600">Geometri · nivå {problem.level}</p>
-    <QuestionCard align="left" size="text"><h3>{task.promptSv}</h3></QuestionCard>
-    <ScreeningImageQuestion task={task} selected={selected} disabled={Boolean(feedback)}
+  return <section {...speech.gestureProps} className="rounded-xl border border-gray-200 bg-white p-3 text-gray-800 shadow-sm sm:p-4 [&_.screening-image-question]:text-inherit">
+    <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+      <p className="text-sm font-medium text-gray-600">Geometri · nivå {problem.level}</p>
+      <PracticeSpeechControls speech={speech} />
+    </div>
+    <QuestionCard align="left" size="text"><h3 {...speech.readable(task.promptSv, true)}>{task.promptSv}</h3></QuestionCard>
+    <ScreeningImageQuestion task={task} selected={selected} disabled={Boolean(feedback)} readable={speech.readable}
       onChange={ids => onInputChange(encodeGeometrySelection(ids))}
       getFeedback={feedback ? id => choiceFeedback(id, selected, task.correctOptionIds, reveal) : undefined} />
     <div className="mt-3 flex flex-wrap items-center gap-3">

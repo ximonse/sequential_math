@@ -1,3 +1,4 @@
+import { resolvePracticeSpeechMode } from '../../../lib/practiceSpeech.js'
 import { lazy, Suspense, useCallback, useState } from 'react'
 import SessionHeader from '../SessionHeader'
 import SessionModeBanner from './SessionModeBanner'
@@ -9,6 +10,7 @@ import FloatingNotices from './FloatingNotices'
 const PracticeNotebook = lazy(() => import('../PracticeNotebook'))
 
 function SessionPage({
+  studentId,
   profileName,
   sessionCount,
   streak,
@@ -96,6 +98,8 @@ function SessionPage({
           <ProblemView
             problem={currentProblem}
             geometryCompleted={geometryCompleted}
+            studentId={studentId}
+            speechMode={resolvePracticeSpeechMode(sessionAssignment)}
             feedback={feedback}
             inputValue={answer}
             onInputChange={onInputChange}

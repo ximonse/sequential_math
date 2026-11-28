@@ -38,6 +38,14 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   const tag = Math.random().toString(36).slice(2, 8)
   const klass = { classId: `geometry-${tag}`, className: `Geometri ${tag}` }
   const pupil = await createPupil(request, { ...klass, name: `Geometri ${tag}`, operations: ['addition'] })
+  await page.addInitScript(() => {
+    window.__geometrySpeech = []
+    Object.defineProperty(window, 'speechSynthesis', {
+      configurable: true,
+      value: { cancel() {}, speak({ text, lang }) { if (text.trim()) window.__geometrySpeech.push({ text, lang }) } }
+    })
+    window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text } }
+  })
   await login(page, pupil)
   await page.getByText('Välj annan träning', { exact: true }).tap()
   await expect(page.getByRole('region', { name: 'Geometri', exact: true }).getByRole('button')).toHaveCount(3)
@@ -47,6 +55,12 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
     await nextQuestion(page)
   }
   await expect(page.getByText('Geometri · nivå 2', { exact: true })).toBeVisible()
+  expect(await page.evaluate(() => window.__geometrySpeech)).toEqual([])
+  const nameOption = page.getByRole('group', { name: 'Svarsalternativ' }).getByRole('button').first()
+  const nameText = await nameOption.getAttribute('aria-label')
+  await nameOption.press('Alt+l')
+  await expect.poll(() => page.evaluate(() => window.__geometrySpeech.at(-1))).toEqual({ text: nameText, lang: 'sv-SE' })
+  await expect(nameOption).toHaveAttribute('aria-pressed', 'false')
   await expect(page.getByRole('group', { name: 'Svarsalternativ' })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('geometry-pupil.png') })
   const completed = page.getByText('Nivå 2 klarad!', { exact: false })
@@ -93,6 +107,8 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   await selectOnlyClass(teacherPage, klass.className)
   await openTab(teacherPage, 'Uppdrag & tickets')
   const creator = teacherPage.getByRole('region', { name: 'Geometri', exact: true })
+  await expect(creator.getByLabel('Uppläsning')).toHaveValue('manual')
+  await creator.getByLabel('Uppläsning').selectOption('off')
   await creator.getByRole('checkbox', { name: 'Linjer och sträckor', exact: true }).check()
   await creator.getByRole('button', { name: 'Skapa geometriuppdrag', exact: true }).click()
   const row = teacherPage.locator('div.rounded.border', { hasText: 'asg_' }).filter({ hasText: 'Geometri – Linjer och sträckor' }).first()
@@ -101,6 +117,8 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
 
   await page.goto(`${link.pathname}${link.search}`)
   await expect(page.getByText(/Uppdrag: Geometri/)).toBeVisible()
+  await expect(page.getByText('Håll på texten för att lyssna.')).toHaveCount(0)
+  await expect(page.locator('[data-practice-speech]')).toHaveCount(0)
   const wrong = await answer(page, false)
   expect(wrong.skill).toBe('geometry_lines')
   await page.screenshot({ path: testInfo.outputPath('geometry-correction.png') })

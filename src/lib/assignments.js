@@ -1,6 +1,7 @@
 import { getConceptDeck } from './conceptPractice.js'
 import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync.js'
-import { geometryGroups } from '../domains/geometry/groups.js'
+import { geometryGroups, isGeometrySkill } from '../domains/geometry/groups.js'
+import { resolvePracticeSpeechMode } from './practiceSpeech.js'
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
 const ASSIGNMENT_PAYLOAD_VERSION = 1
 const KNOWN_OPERATION_TYPES = new Set([
@@ -139,10 +140,8 @@ export function encodeAssignmentPayload(assignment) {
 
   if (normalized.kind === 'table') payload.tables = normalized.tables
   if (normalized.kind === 'focus') payload.focusMode = normalized.focusMode
-  if (normalized.kind === 'concept') {
-    payload.conceptDeckId = normalized.conceptDeckId
-    if (normalized.conceptSpeechByDefault) payload.conceptSpeechByDefault = true
-  }
+  if (normalized.kind === 'concept') payload.conceptDeckId = normalized.conceptDeckId
+  if (normalized.speechMode) payload.speechMode = normalized.speechMode
 
   return toBase64Url(JSON.stringify(payload))
 }
@@ -200,7 +199,7 @@ function normalizeAssignmentCore(input, options = {}) {
     const deck = getConceptDeck(input.conceptDeckId)
     if (!deck) return null
     return { id, kind, title: `Begrepp · ${deck.title}`, targetCount: deck.exercises.length, conceptDeckId: deck.id,
-      conceptSpeechByDefault: input.conceptSpeechByDefault === true,
+      speechMode: resolvePracticeSpeechMode(input),
       createdAt, problemTypes: [], minLevel: 1, maxLevel: 1, ncmCodes: [], ncmAbilityTags: [] }
   }
 
@@ -265,6 +264,7 @@ function normalizeAssignmentCore(input, options = {}) {
     kind: 'standard',
     title,
     problemTypes,
+    ...(problemTypes.some(isGeometrySkill) ? { speechMode: resolvePracticeSpeechMode(input) } : {}),
     minLevel,
     maxLevel,
     targetCount,

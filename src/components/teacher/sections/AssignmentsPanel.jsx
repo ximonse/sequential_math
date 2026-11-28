@@ -1,3 +1,4 @@
+import { DEFAULT_PRACTICE_SPEECH_MODE, PRACTICE_SPEECH_MODES } from '../../../lib/practiceSpeech.js'
 import { createAssignment } from '../../../lib/assignments.js'
 import { conceptDecks } from '../../../lib/conceptPractice.js'
 import ConceptAssignmentResults from './ConceptAssignmentResults.jsx'
@@ -60,6 +61,16 @@ const PRESET_GROUPS = [
   ].map(([key, label]) => [key, label, TONES.other])
 ]
 
+function PracticeSpeechModeSelect({ value, onChange }) {
+  return <label className="mb-2 inline-flex flex-wrap items-center gap-2 text-sm">
+    Uppläsning
+    <select className="rounded border border-gray-300 bg-white px-2 py-1"
+      value={value} onChange={event => onChange(event.target.value)}>
+      {PRACTICE_SPEECH_MODES.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+    </select>
+  </label>
+}
+
 export default function AssignmentsPanel({
   assignments,
   students = [],
@@ -86,7 +97,8 @@ export default function AssignmentsPanel({
   const [breakGames, setBreakGames] = useState(false)
   const [workspaces, setWorkspaces] = useState({ notebook: false, drawing: true })
   const [geometrySelection, setGeometrySelection] = useState([])
-  const [conceptSpeechByDefault, setConceptSpeechByDefault] = useState(false)
+  const [conceptSpeechMode, setConceptSpeechMode] = useState(DEFAULT_PRACTICE_SPEECH_MODE)
+  const [geometrySpeechMode, setGeometrySpeechMode] = useState(DEFAULT_PRACTICE_SPEECH_MODE)
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -106,6 +118,7 @@ export default function AssignmentsPanel({
       </AssignmentModuleBox>
 
       <AssignmentModuleBox title="Geometri">
+        <PracticeSpeechModeSelect value={geometrySpeechMode} onChange={setGeometrySpeechMode} />
         <div className="flex flex-wrap items-center gap-2 text-sm">
           {Object.entries(geometryGroups).map(([skill, label]) => (
             <label key={skill} className="inline-flex items-center gap-1">
@@ -117,7 +130,7 @@ export default function AssignmentsPanel({
             </label>
           ))}
           <button type="button" disabled={!geometrySelection.length}
-            onClick={() => onCreatePreset(geometrySelection, undefined, false, { notebook: false, drawing: false })}
+            onClick={() => onCreatePreset(geometrySelection, undefined, false, { notebook: false, drawing: false }, geometrySpeechMode)}
             className={`${BUTTON_BASE} ${TONES.other} disabled:opacity-50`}>
             Skapa geometriuppdrag
           </button>
@@ -163,14 +176,11 @@ export default function AssignmentsPanel({
       </AssignmentModuleBox>
 
       <AssignmentModuleBox title="Begrepp">
-        <label className="mb-2 flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={conceptSpeechByDefault} onChange={event => setConceptSpeechByDefault(event.target.checked)} />
-          Automatisk uppläsning som standard
-        </label>
+        <PracticeSpeechModeSelect value={conceptSpeechMode} onChange={setConceptSpeechMode} />
         <div className="flex flex-wrap gap-2">
           {Object.values(conceptDecks).map(deck => <button key={deck.id} type="button"
             className={`${BUTTON_BASE} ${TONES.custom}`}
-            onClick={() => onCreateMathPractice(createAssignment({ kind: 'concept', conceptDeckId: deck.id, conceptSpeechByDefault }))}>{deck.title}</button>)}
+            onClick={() => onCreateMathPractice(createAssignment({ kind: 'concept', conceptDeckId: deck.id, speechMode: conceptSpeechMode }))}>{deck.title}</button>)}
         </div>
       </AssignmentModuleBox>
 

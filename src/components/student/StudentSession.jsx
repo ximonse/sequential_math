@@ -493,6 +493,7 @@ function StudentSession() {
 
   return (
     <SessionPage
+      studentId={studentId}
       profileName={profile.displayAlias}
       sessionCount={sessionCount}
       streak={streak}

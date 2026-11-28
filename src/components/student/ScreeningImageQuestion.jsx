@@ -29,7 +29,7 @@ export function ScreeningImage({ image, context = {} }) {
     : <span role="status">{error || 'Hämtar bild…'}</span>
 }
 
-export default function ScreeningImageQuestion({ task, selected = [], onChange, disabled = false, context = {}, getFeedback }) {
+export default function ScreeningImageQuestion({ task, selected = [], onChange, disabled = false, context = {}, getFeedback, readable }) {
   const gesture = useRef(null)
   function choose(id) {
     if (disabled || !onChange) return
@@ -46,6 +46,7 @@ export default function ScreeningImageQuestion({ task, selected = [], onChange, 
           return <button key={option.id} type="button" aria-pressed={selected.includes(option.id)}
             aria-description={feedback === 'correct' ? 'Rätt svar' : feedback === 'incorrect' ? 'Fel svar' : undefined}
             data-answer-feedback={feedback}
+            {...readable?.(option.image ? 'Bild ' + (index + 1) : option.labelSv)}
             aria-label={option.labelSv || `Bild ${index + 1}`} disabled={disabled} className="screening-option"
             onPointerDown={event => { gesture.current = { x: event.clientX, y: event.clientY, cancelled: false } }}
             onPointerMove={event => { if (gesture.current && Math.hypot(event.clientX - gesture.current.x, event.clientY - gesture.current.y) > 10) gesture.current.cancelled = true }}

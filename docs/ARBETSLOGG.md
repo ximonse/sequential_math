@@ -11,6 +11,7 @@
 - Inloggningsrättningen är READY för commit `5e3cfe5` på [samma Preview-adress](https://sekvens-git-codex-gamma-concept-practice-ximonses-projects.vercel.app). 1 448 tester, bygge och två lokala klickprov gröna. Produktionen är verifierad på `9d792ca`. Elevinloggning i Preview återstår att bekräfta.
 - Efter Simons prov byggdes lokal färgåterkoppling i geometri och begreppsövningar. Svara är större. Rätt val blir grönt med snabb toning. Fel val visas rött före grönt facit. Sorteringskort visas i rätt fält efter rättningen och det ursprungliga svaret sparas för läraren. Stöd för minskad rörelse. Placering under Välj annan träning diskuteras.
 - Vändbara begreppskort med valfri svensk uppläsning. Läraren kan förinställa uppläsning för uppdraget, eleven kan ändra det på sin enhet och lyssna manuellt. Svara till höger. Nästa begreppsfråga visas efter tre sekunder vid rätt svar. Alla geometriområden visar Nivå 2 klarad när 3 av 4 respektive 5 av 6 olika begrepp på nivå 2 besvarats rätt inom respektive tidsgräns. Frågetexten återanvänder övrig tränings frågekort.
+- [Preview](https://sekvens-git-codex-gamma-concept-practice-ximonses-projects.vercel.app) 2026-11-28: Commit c1f2cf3 har status READY i sekvens Preview dpl_CzfdVY4Q9yx9QCDwC6aJseX5ELJ3. Den stående grenadressen pekar på bygget. Elevflödet är verifierat lokalt.
 
 ## 2026-11-26: Geometrins första träningsversion
 

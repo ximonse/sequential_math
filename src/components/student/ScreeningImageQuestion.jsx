@@ -3,6 +3,7 @@ import { screeningFigureSvg } from '../../domains/arithmetic/screeningFigures.js
 import { isChoiceTask } from '../../domains/arithmetic/screeningImageQuestions.js'
 import { diagnosticRequest } from '../teacher/sections/diagnosticRequest.js'
 import './screeningImages.css'
+import './answerFeedback.css'
 
 export function ScreeningImage({ image, context = {} }) {
   const [loaded, setLoaded] = useState(null)
@@ -28,7 +29,7 @@ export function ScreeningImage({ image, context = {} }) {
     : <span role="status">{error || 'Hämtar bild…'}</span>
 }
 
-export default function ScreeningImageQuestion({ task, selected = [], onChange, disabled = false, context = {} }) {
+export default function ScreeningImageQuestion({ task, selected = [], onChange, disabled = false, context = {}, getFeedback }) {
   const gesture = useRef(null)
   function choose(id) {
     if (disabled || !onChange) return
@@ -40,15 +41,22 @@ export default function ScreeningImageQuestion({ task, selected = [], onChange, 
     {isChoiceTask(task) && <>
       <p className="screening-choice-instruction">{task.responseMode === 'multiple' ? 'Välj en eller flera bilder.' : task.responseMode === 'name' ? 'Välj ett namn.' : 'Välj en bild.'}</p>
       <div className="screening-options" role="group" aria-label="Svarsalternativ">
-        {task.options.map((option, index) => <button key={option.id} type="button" aria-pressed={selected.includes(option.id)}
-          aria-label={option.labelSv || `Bild ${index + 1}`} disabled={disabled} className="screening-option"
-          onPointerDown={event => { gesture.current = { x: event.clientX, y: event.clientY, cancelled: false } }}
-          onPointerMove={event => { if (gesture.current && Math.hypot(event.clientX - gesture.current.x, event.clientY - gesture.current.y) > 10) gesture.current.cancelled = true }}
-          onPointerCancel={() => { if (gesture.current) gesture.current.cancelled = true }}
-          onClick={event => { if (event.detail === 0 || !gesture.current?.cancelled) choose(option.id); gesture.current = null }}>
-          {option.image ? <ScreeningImage image={option.image} context={context} /> : <span>{option.labelSv}</span>}
-          <span className="screening-selected-symbol" aria-hidden="true">{selected.includes(option.id) ? '✓' : ''}</span>
-        </button>)}
+        {task.options.map((option, index) => {
+          const feedback = getFeedback?.(option.id)
+          return <button key={option.id} type="button" aria-pressed={selected.includes(option.id)}
+            aria-description={feedback === 'correct' ? 'Rätt svar' : feedback === 'incorrect' ? 'Fel svar' : undefined}
+            data-answer-feedback={feedback}
+            aria-label={option.labelSv || `Bild ${index + 1}`} disabled={disabled} className="screening-option"
+            onPointerDown={event => { gesture.current = { x: event.clientX, y: event.clientY, cancelled: false } }}
+            onPointerMove={event => { if (gesture.current && Math.hypot(event.clientX - gesture.current.x, event.clientY - gesture.current.y) > 10) gesture.current.cancelled = true }}
+            onPointerCancel={() => { if (gesture.current) gesture.current.cancelled = true }}
+            onClick={event => { if (event.detail === 0 || !gesture.current?.cancelled) choose(option.id); gesture.current = null }}>
+            {option.image ? <ScreeningImage image={option.image} context={context} /> : <span>{option.labelSv}</span>}
+            <span className="screening-selected-symbol" aria-hidden="true">
+              {feedback === 'incorrect' ? '×' : feedback === 'correct' || selected.includes(option.id) ? '✓' : ''}
+            </span>
+          </button>
+        })}
       </div>
     </>}
   </section>

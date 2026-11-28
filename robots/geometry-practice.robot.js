@@ -15,8 +15,18 @@ async function answer(page, correct) {
   for (const id of ids) await choices.nth(task.options.findIndex(option => option.id === id)).tap()
   await expect(submit).toBeEnabled()
   expect((await readState(page)).phase).toBe('answering')
+  await expect(submit).toHaveCSS('min-height', '50px')
   await submit.tap()
+  if (!correct) {
+    const wrongOption = choices.nth(task.options.findIndex(option => option.id === ids[0]))
+    await expect(wrongOption).toHaveAttribute('data-answer-feedback', 'incorrect')
+  }
   await expect(page.getByText(correct ? 'Rätt!' : /^Rätt svar är /)).toBeVisible()
+  for (const id of task.correctOptionIds) {
+    const rightOption = choices.nth(task.options.findIndex(option => option.id === id))
+    await expect(rightOption).toHaveAttribute('data-answer-feedback', 'correct')
+    await expect(rightOption).toHaveCSS('background-color', 'rgb(220, 252, 231)')
+  }
   return problem
 }
 
@@ -64,6 +74,7 @@ test('geometry uses touch choices, timed advancement, resumable assignments and 
   await expect(page.getByText(/Uppdrag: Geometri/)).toBeVisible()
   const wrong = await answer(page, false)
   expect(wrong.skill).toBe('geometry_lines')
+  await page.screenshot({ path: testInfo.outputPath('geometry-correction.png') })
   const readAssignmentAnswers = async () => (await readServerProfile(request, pupil.studentId))?.recentProblems
     ?.filter(result => result.domain === 'geometry' && result.trainingContext?.assignmentId) ?? []
   await expect.poll(async () => (await readAssignmentAnswers()).length).toBe(1)

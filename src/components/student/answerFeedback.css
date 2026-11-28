@@ -1,0 +1,47 @@
+.answer-submit-button {
+  min-inline-size: clamp(9rem, 30vw, 12rem);
+  min-block-size: 3.125rem;
+  padding: .65rem 1.35rem;
+  font-size: 1.125rem;
+}
+
+.screening-option:where([data-answer-feedback]),
+.concept-sort-card:where([data-answer-feedback]) {
+  animation: answer-feedback-enter 150ms ease-out both;
+  box-shadow: 0 0 0 1px currentColor;
+  outline: none;
+}
+
+.concept-sort-card:where([data-answer-feedback]) {
+  border: 1px solid;
+}
+
+.screening-option[data-answer-feedback="correct"],
+.concept-sort-card[data-answer-feedback="correct"] {
+  background: #dcfce7;
+  border-color: #15803d;
+  color: #14532d;
+  outline: none;
+}
+
+.screening-option[data-answer-feedback="incorrect"],
+.concept-sort-card[data-answer-feedback="incorrect"] {
+  background: #fee2e2;
+  border-color: #b91c1c;
+  color: #7f1d1d;
+  outline: none;
+}
+
+.screening-option[data-answer-feedback] .screening-selected-symbol {
+  color: inherit;
+}
+
+@keyframes answer-feedback-enter {
+  from { opacity: .72; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screening-option[data-answer-feedback],
+  .concept-sort-card[data-answer-feedback] { animation: none; }
+}

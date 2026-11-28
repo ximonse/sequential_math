@@ -6,11 +6,13 @@ import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime.js'
 import ScreeningImageQuestion, { ScreeningImage } from './ScreeningImageQuestion.jsx'
 import StudentSyncStatus from './session/StudentSyncStatus.jsx'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus.js'
+import { choiceFeedback, useAnswerReveal } from './session/useAnswerReveal.js'
 
 const action = 'rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800 disabled:opacity-50'
-const secondary = 'rounded-lg border border-gray-300 px-3 py-1.5 font-medium text-gray-800 hover:bg-gray-50'
+const buttonFrame = 'rounded-lg px-3 py-1.5 font-medium'
+const secondary = `${buttonFrame} border border-gray-300 text-gray-800 hover:bg-gray-50`
 
-function SortingExercise({ exercise, titles, answer, disabled, change }) {
+function SortingExercise({ exercise, titles, answer, disabled, result, reveal, change }) {
   const [active, setActive] = useState(null)
   const place = (object, field) => {
     if (!disabled && exercise.objects.some(item => item.id === object)) {
@@ -18,26 +20,33 @@ function SortingExercise({ exercise, titles, answer, disabled, change }) {
       setActive(null)
     }
   }
-  const card = object => <button key={object.id} type="button" draggable={!disabled} disabled={disabled}
-    aria-label={object.text.replace(/\[([^\]]+)\]/g, '$1 (markerat)')} aria-pressed={active === object.id}
-    onDragStart={event => event.dataTransfer.setData('text/plain', object.id)}
-    onClick={() => setActive(object.id)}
-    className={`${secondary} bg-white ${active === object.id ? 'ring-2 ring-blue-700' : ''}`}>
-    {object.text.split(/(\[[^\]]+\])/).map((part, index) => part.startsWith('[')
-      ? <strong key={index} className="rounded bg-blue-100 px-0.5 text-blue-950">{part.slice(1, -1)}</strong> : part)}
-  </button>
+  const card = object => {
+    const correct = reveal || answer[object.id] === object.field
+    const appearance = result ? buttonFrame : `${secondary} bg-white`
+    return <button key={object.id} type="button" draggable={!disabled} disabled={disabled}
+      data-answer-feedback={result ? (correct ? 'correct' : 'incorrect') : undefined}
+      aria-description={result ? (correct ? 'Rätt placering' : 'Fel placering') : undefined}
+      aria-label={object.text.replace(/\[([^\]]+)\]/g, '$1 (markerat)')} aria-pressed={active === object.id}
+      onDragStart={event => event.dataTransfer.setData('text/plain', object.id)}
+      onClick={() => setActive(object.id)}
+      className={`${appearance} concept-sort-card ${active === object.id ? 'ring-2 ring-blue-700' : ''}`}>
+      {object.text.split(/(\[[^\]]+\])/).map((part, index) => part.startsWith('[')
+        ? <strong key={index} className="rounded bg-blue-100 px-0.5 text-blue-950">{part.slice(1, -1)}</strong> : part)}
+      {result && <span className="ml-1 font-bold" aria-hidden="true">{correct ? '✓' : '×'}</span>}
+    </button>
+  }
   return <>
     <p className="mb-2 text-sm text-gray-600">Välj ett kort och sedan ett fält. Du kan också dra kortet.</p>
     <div aria-label="Kort att placera" className="mb-3 flex min-h-10 flex-wrap gap-2">
       {exercise.objects.filter(object => !answer[object.id]).map(card)}
     </div>
     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-      {exercise.fields.map(field => <div key={field} className="rounded-lg border border-blue-200 bg-blue-50 p-2"
+      {exercise.fields.map(field => <div key={field} role="group" aria-label={titles[field]} className="rounded-lg border border-blue-200 bg-blue-50 p-2"
         onDragOver={event => { if (!disabled) event.preventDefault() }}
         onDrop={event => { event.preventDefault(); place(event.dataTransfer.getData('text/plain'), field) }}>
         <button type="button" disabled={disabled || !active} className="mb-1 w-full text-left font-semibold text-blue-950"
           onClick={() => place(active, field)}>{titles[field]}</button>
-        <div className="flex min-h-8 flex-wrap gap-1">{exercise.objects.filter(object => answer[object.id] === field).map(card)}</div>
+        <div className="flex min-h-8 flex-wrap gap-1">{exercise.objects.filter(object => (reveal && result ? object.field : answer[object.id]) === field).map(card)}</div>
       </div>)}
     </div>
   </>
@@ -45,14 +54,16 @@ function SortingExercise({ exercise, titles, answer, disabled, change }) {
 
 function Exercise({ exercise, deck, busy, result, save, next }) {
   const [answer, setAnswer] = useState(exercise.task ? [] : {})
+  const reveal = useAnswerReveal(result)
   const titles = Object.fromEntries(deck.cards.map(card => [card.id, card.title]))
   const canSubmit = exercise.task ? answer.length > 0 : Object.keys(answer).length === exercise.objects.length
   const choices = exercise.task?.options.filter(option => exercise.task.correctOptionIds.includes(option.id))
   return <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
     <h2 className="mb-3 text-lg font-semibold">{exercise.prompt}</h2>
-    {exercise.task ? <ScreeningImageQuestion task={exercise.task} selected={answer} disabled={busy || Boolean(result)} onChange={setAnswer} />
-      : <SortingExercise exercise={exercise} titles={titles} answer={answer} disabled={busy || Boolean(result)} change={setAnswer} />}
-    {result && <div role="status" className="mt-3 rounded-lg bg-gray-100 px-3 py-2">
+    {exercise.task ? <ScreeningImageQuestion task={exercise.task} selected={answer} disabled={busy || Boolean(result)} onChange={setAnswer}
+      getFeedback={result ? id => choiceFeedback(id, answer, exercise.task.correctOptionIds, reveal) : undefined} />
+      : <SortingExercise exercise={exercise} titles={titles} answer={answer} disabled={busy || Boolean(result)} result={result} reveal={reveal} change={setAnswer} />}
+    {reveal && <div role="status" className="mt-3 rounded-lg bg-gray-100 px-3 py-2">
       {result.correct ? 'Rätt!' : exercise.task ? <>
         <p>Rätt svar</p>
         <div className="flex flex-wrap gap-2">{choices.map(option => option.image
@@ -61,7 +72,7 @@ function Exercise({ exercise, deck, busy, result, save, next }) {
       </> : <ul className="space-y-1">{exercise.objects.filter(x => answer[x.id] !== x.field).map(object =>
         <li key={object.id}>{object.text} hör till <strong>{titles[object.field]}</strong>.</li>)}</ul>}
     </div>}
-    <button type="button" className={`${action} mt-3`} disabled={busy || (!result && !canSubmit)}
+    <button type="button" className={`${action} answer-submit-button mt-3`} disabled={busy || (result ? !reveal : !canSubmit)}
       onClick={result ? next : () => save(answer)}>{result ? 'Fortsätt' : 'Svara'}</button>
   </section>
 }

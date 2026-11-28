@@ -4,6 +4,12 @@ import { clearStudentLoginFailures, createStudentSession, getLiveStudentSession,
 import { guardPupilKey } from './_pupilReferenceWrite.js'
 
 const denied = res => res.status(401).json({ error: 'Inloggningen kunde inte bekräftas.' })
+function denyLogin(res, reason) {
+  // Keep the client response generic and log no credentials or pupil identifiers.
+  if (process.env.VERCEL_ENV === 'preview') console.info('preview_student_login_denied', { reason })
+  return denied(res)
+}
+
 const isValidStudentReference = value => /^[A-Z0-9ÅÄÖ_]{3,100}$/u.test(String(value || ''))
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,DELETE,OPTIONS', headers: 'Content-Type' }, req); res.setHeader('Cache-Control', 'no-store')
@@ -18,7 +24,9 @@ export default async function handler(req, res) {
   const ip = requestIp(req)
   const hasQrCredential = isValidStudentReference(requestedStudentId) && qrSecret.length >= 32
   const rateSubject = hasQrCredential ? requestedStudentId : `code:${studentLoginCodeIndexKey(loginCode)}`
-  if (!requestOriginIsTrusted(req) || !/^\d{4}$/.test(pin) || (!hasQrCredential && !loginCode) || await isStudentLoginRateLimited(rateSubject, ip) || await isStudentLoginIpRateLimited(ip)) return denied(res)
+  if (!requestOriginIsTrusted(req)) return denyLogin(res, 'origin')
+  if (!/^\d{4}$/.test(pin) || (!hasQrCredential && !loginCode)) return denyLogin(res, 'input')
+  if (await isStudentLoginRateLimited(rateSubject, ip) || await isStudentLoginIpRateLimited(ip)) return denyLogin(res, 'rate_limit')
 
   const studentId = hasQrCredential
     ? requestedStudentId
@@ -27,11 +35,11 @@ export default async function handler(req, res) {
   const credentialsValid = hasQrCredential
     ? verifyPilotStudentCredentials(profile?.auth, qrSecret, pin)
     : verifyPilotStudentPin(profile?.auth, pin)
-  if (!credentialsValid) { await recordStudentLoginFailure(rateSubject, ip); return denied(res) }
+  if (!credentialsValid) { await recordStudentLoginFailure(rateSubject, ip); return denyLogin(res, 'credential') }
   await clearStudentLoginFailures(rateSubject, ip)
   // QR sign-in gradually backfills the code index for cards issued before this migration.
   if (hasQrCredential && profile?.displayAlias) await guardPupilKey(studentLoginCodeIndexKey(profile.displayAlias), studentId, studentId, { live: true })
   const session = await createStudentSession(profile)
-  if (!session) return denied(res)
+  if (!session) return denyLogin(res, 'session_creation')
   setStudentSessionCookie(res, session.id); return res.status(201).json({ ok: true, student: studentIdentityDto(profile), csrfToken: session.csrfToken })
 }
